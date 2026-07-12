@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { uploadsDir } from "@/lib/uploads";
 
 /**
  * Media upload (dish photos and videos) from the mobile app.
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const dir = path.join(process.cwd(), "uploads");
+  const dir = uploadsDir();
   await mkdir(dir, { recursive: true });
   const filename = `${crypto.randomBytes(12).toString("hex")}${ext}`;
   await writeFile(path.join(dir, filename), Buffer.from(await file.arrayBuffer()));

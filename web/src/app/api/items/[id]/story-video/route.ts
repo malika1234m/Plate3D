@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
 import { autoEditVideo } from "@/lib/video";
+import { uploadsDir } from "@/lib/uploads";
 
 export const maxDuration = 300; // video processing can take a while
 
@@ -31,7 +32,7 @@ export async function POST(req: Request, { params }: Params) {
     return Response.json({ error: "Video too large (max 200 MB)" }, { status: 413 });
   }
 
-  const dir = path.join(process.cwd(), "uploads");
+  const dir = uploadsDir();
   await mkdir(dir, { recursive: true });
   const key = crypto.randomBytes(12).toString("hex");
   const rawExt = path.extname(file.name).toLowerCase() || ".mp4";

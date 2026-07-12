@@ -1,0 +1,106 @@
+// Plate3D — restaurant menu platform with 3D food models
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String       @id @default(cuid())
+  email                String       @unique
+  passwordHash         String
+  name                 String
+  plan                 String       @default("free") // free | pro
+  stripeCustomerId     String       @default("")
+  stripeSubscriptionId String       @default("")
+  createdAt            DateTime     @default(now())
+  restaurants          Restaurant[]
+}
+
+model Restaurant {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String     @default("")
+  address     String     @default("")
+  phone       String     @default("")
+  currency    String     @default("USD")
+  caption     String     @default("") // short tagline shown under the name on the menu
+  logoUrl     String     @default("")
+  coverUrl    String     @default("")
+  accentColor String     @default("#F0762E")
+  theme       String     @default("midnight") // midnight | espresso | ivory
+  layout      String     @default("list") // list | grid
+  showReel    Boolean    @default(true) // "From our kitchen" video reel on the menu
+  isPublished Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  categories  Category[]
+  items       MenuItem[]
+}
+
+model Category {
+  id            String     @id @default(cuid())
+  name          String
+  sortOrder     Int        @default(0)
+  // Serving window as "HH:MM" (24h). Empty = served all day. Evaluated
+  // against the customer's device clock — they are at the restaurant.
+  availableFrom String     @default("")
+  availableTo   String     @default("")
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId  String
+  items         MenuItem[]
+}
+
+model MenuItem {
+  id           String     @id @default(cuid())
+  name         String
+  caption      String     @default("") // short tasty one-liner shown under the dish name
+  description  String     @default("")
+  price        Float
+  imageUrl     String     @default("")
+  videoUrl     String     @default("")
+  storyVideoUrl String    @default("") // auto-edited "how it's made" clip
+  modelUrl     String     @default("") // GLB file once 3D generation completes
+  modelUsdzUrl String     @default("") // USDZ for iOS AR Quick Look
+  modelStatus  String     @default("NONE") // NONE | PROCESSING | READY | FAILED
+  modelJobId   String     @default("")
+  soldOutDate  String     @default("") // YYYY-MM-DD; sold out when it equals today
+  isVegetarian Boolean    @default(false)
+  isSpicy      Boolean    @default(false)
+  isAvailable  Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  category       Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId     String
+  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId   String
+  modifierGroups ModifierGroup[]
+}
+
+// "Size", "Toppings", "Spice level" — choices a customer makes on a dish
+model ModifierGroup {
+  id        String           @id @default(cuid())
+  name      String
+  type      String           @default("single") // single | multi
+  required  Boolean          @default(false)
+  sortOrder Int              @default(0)
+  item      MenuItem         @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  options   ModifierOption[]
+}
+
+model ModifierOption {
+  id         String        @id @default(cuid())
+  name       String
+  priceDelta Float         @default(0)
+  sortOrder  Int           @default(0)
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId    String
+}

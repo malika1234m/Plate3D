@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies (belt-and-braces; each app also ignores its own)
+node_modules/

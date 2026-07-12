@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  /* Plate3D brand — true black stage, orange + sky accents from the logo */
+  --navy-950: #070708;
+  --navy-900: #121214;
+  --navy-800: #1b1b1f;
+  --navy-700: #2a2a30;
+  --ink: #f4f4f1;
+  --ink-dim: #b9b9b2;
+  --ink-faint: #80807a;
+  --accent: #f0762e;
+  --sky: #3fa9e0;
+}
+
+@theme inline {
+  --color-navy-950: var(--navy-950);
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-navy-700: var(--navy-700);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-accent: var(--accent);
+  --color-sky: var(--sky);
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-grotesk);
+}
+
+body {
+  background: var(--navy-950);
+  color: var(--ink);
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars on horizontal rails without killing scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.floaty {
+  animation: floaty 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .floaty {
+    animation: none;
+  }
+}
+
+model-viewer {
+  width: 100%;
+  height: 100%;
+  --poster-color: transparent;
+}

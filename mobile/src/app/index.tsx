@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { api, getToken, setToken } from "@/lib/api";
-import { colors } from "@/lib/theme";
+import { LoadingScreen } from "@/components/loading-screen";
+import { ONBOARDED_KEY } from "./welcome";
 
-/** Entry point: route to the dashboard when a valid session exists. */
+/** Entry point: welcome tour on first launch, then login/dashboard. */
 export default function Index() {
   const router = useRouter();
 
@@ -12,7 +13,8 @@ export default function Index() {
     (async () => {
       const token = await getToken();
       if (!token) {
-        router.replace("/login");
+        const seenTour = await SecureStore.getItemAsync(ONBOARDED_KEY).catch(() => null);
+        router.replace(seenTour ? "/login" : "/welcome");
         return;
       }
       try {
@@ -25,9 +27,5 @@ export default function Index() {
     })();
   }, [router]);
 
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
-      <ActivityIndicator color={colors.accent} size="large" />
-    </View>
-  );
+  return <LoadingScreen />;
 }

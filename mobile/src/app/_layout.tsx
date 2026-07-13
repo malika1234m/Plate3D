@@ -12,6 +12,7 @@ import {
   Poppins_800ExtraBold,
 } from "@expo-google-fonts/poppins";
 import { MaterialSymbols_400Regular } from "@expo-google-fonts/material-symbols/400Regular";
+import { LoadingScreen } from "@/components/loading-screen";
 import { colors, font } from "@/lib/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -39,10 +40,11 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    // Hand off from the native splash to our branded loading screen right away.
+    SplashScreen.hideAsync();
+  }, []);
 
-  if (!loaded) return null;
+  if (!loaded) return <LoadingScreen />;
 
   return (
     <ThemeProvider value={theme}>
@@ -57,6 +59,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="restaurants" options={{ headerShown: false }} />

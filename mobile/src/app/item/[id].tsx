@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { api, MenuItem } from "@/lib/api";
 import { handleUpgradeError } from "@/lib/upgrade";
@@ -71,7 +71,12 @@ export default function EditDish() {
     return stopPolling;
   }, [id, startPolling, stopPolling]);
 
-  if (!item || !draft) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  if (!item || !draft)
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
+        <ActivityIndicator color={colors.accent} size="large" />
+      </View>
+    );
 
   const onChange = (patch: Partial<DishDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
 
@@ -150,8 +155,12 @@ export default function EditDish() {
     });
 
   const removeStoryVideo = async () => {
-    const { item: updated } = await api.updateItem(id, { storyVideoUrl: "" });
-    setItem(updated);
+    try {
+      const { item: updated } = await api.updateItem(id, { storyVideoUrl: "" });
+      setItem(updated);
+    } catch (err) {
+      Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+    }
   };
 
   const remove = () => {
@@ -161,8 +170,12 @@ export default function EditDish() {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          await api.deleteItem(id);
-          router.back();
+          try {
+            await api.deleteItem(id);
+            router.back();
+          } catch (err) {
+            Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+          }
         },
       },
     ]);

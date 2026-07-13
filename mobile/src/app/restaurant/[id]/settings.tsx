@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { api, mediaUrl, API_URL, RestaurantFull } from "@/lib/api";
@@ -35,7 +35,12 @@ export default function Settings() {
     api.getRestaurant(id).then(({ restaurant }) => setRestaurant(restaurant));
   }, [id]);
 
-  if (!restaurant) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  if (!restaurant)
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
+        <ActivityIndicator color={colors.accent} size="large" />
+      </View>
+    );
 
   const set = (patch: Partial<RestaurantFull>) =>
     setRestaurant((r) => (r ? { ...r, ...patch } : r));
@@ -95,9 +100,13 @@ export default function Settings() {
           text: "Delete forever",
           style: "destructive",
           onPress: async () => {
-            await api.deleteRestaurant(id);
-            router.dismissAll();
-            router.replace("/restaurants");
+            try {
+              await api.deleteRestaurant(id);
+              router.dismissAll();
+              router.replace("/restaurants");
+            } catch (err) {
+              Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+            }
           },
         },
       ]

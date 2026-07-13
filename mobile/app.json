@@ -26,7 +26,10 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -55,6 +58,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2478ee53-8791-4910-be4c-4520a5eafa75"
+      }
+    },
+    "owner": "malika_nish"
   }
 }

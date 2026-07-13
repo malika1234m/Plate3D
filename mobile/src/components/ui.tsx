@@ -131,8 +131,10 @@ export function Button({
 
 /* ---------- Input ---------- */
 
-export function Input(props: TextInputProps & { label?: string; hint?: string }) {
-  const { label, hint, style, ...rest } = props;
+export function Input(
+  props: TextInputProps & { label?: string; hint?: string; error?: string }
+) {
+  const { label, hint, error, style, ...rest } = props;
   const [focused, setFocused] = useState(false);
   return (
     <View style={{ marginBottom: 14 }}>
@@ -141,10 +143,19 @@ export function Input(props: TextInputProps & { label?: string; hint?: string })
         placeholderTextColor={colors.textFaint}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[styles.input, focused && { borderColor: colors.accent }, style]}
+        style={[
+          styles.input,
+          focused && { borderColor: colors.accent },
+          !!error && { borderColor: colors.danger },
+          style,
+        ]}
         {...rest}
       />
-      {hint ? <Text style={styles.inputHint}>{hint}</Text> : null}
+      {error ? (
+        <Text style={[styles.inputHint, { color: colors.danger }]}>{error}</Text>
+      ) : hint ? (
+        <Text style={styles.inputHint}>{hint}</Text>
+      ) : null}
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import {
+  Alert,
   Image,
   Pressable,
   RefreshControl,
@@ -55,9 +56,18 @@ export default function Restaurants() {
     }, [load])
   );
 
-  const logout = async () => {
-    await setToken(null);
-    router.replace("/login");
+  const logout = () => {
+    Alert.alert("Sign out", "You'll need your email and password to sign back in.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign out",
+        style: "destructive",
+        onPress: async () => {
+          await setToken(null);
+          router.replace("/login");
+        },
+      },
+    ]);
   };
 
   const first = restaurants[0];

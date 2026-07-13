@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -107,7 +108,11 @@ export default function MenuEditor() {
 
   const toggleSoldOut = async (item: MenuItem) => {
     const soldOut = item.soldOutDate === localToday();
-    await api.updateItem(item.id, { soldOutToday: !soldOut });
+    try {
+      await api.updateItem(item.id, { soldOutToday: !soldOut });
+    } catch (err) {
+      Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+    }
     load();
   };
 
@@ -118,14 +123,23 @@ export default function MenuEditor() {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          await api.deleteCategory(categoryId);
+          try {
+            await api.deleteCategory(categoryId);
+          } catch (err) {
+            Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+          }
           load();
         },
       },
     ]);
   };
 
-  if (!restaurant) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  if (!restaurant)
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
+        <ActivityIndicator color={colors.accent} size="large" />
+      </View>
+    );
 
   const onAction = (to: "qr" | "preview" | "settings") => {
     if (to === "qr") router.push(`/restaurant/${id}/qr`);

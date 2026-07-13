@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
 import { gen3dEnabled, startGeneration, checkGeneration } from "@/lib/gen3d";
+import { saveFromUrl } from "@/lib/uploads";
 import { PLANS, planOf, upgradeRequired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
@@ -78,12 +79,20 @@ export async function GET(req: Request, { params }: Params) {
 
   const result = await checkGeneration(item.modelJobId);
   if (result.status === "READY") {
+    // Copy the models into our own storage — the provider's URLs expire.
+    // Fall back to the provider URL if a download fails; the menu still
+    // works today and the next regeneration can fix it.
+    let modelUrl = result.modelUrl;
+    let usdzUrl = result.usdzUrl;
+    if (modelUrl) modelUrl = await saveFromUrl(modelUrl, ".glb").catch(() => result.modelUrl);
+    if (usdzUrl) usdzUrl = await saveFromUrl(usdzUrl, ".usdz").catch(() => result.usdzUrl);
+
     const updated = await prisma.menuItem.update({
       where: { id },
       data: {
         modelStatus: "READY",
-        modelUrl: result.modelUrl,
-        modelUsdzUrl: result.usdzUrl,
+        modelUrl,
+        modelUsdzUrl: usdzUrl,
       },
     });
     return Response.json({ item: updated });

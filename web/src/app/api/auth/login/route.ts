@@ -2,6 +2,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken } from "@/lib/auth";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/ratelimit";
 
 const schema = z.object({
   email: z.string().email().toLowerCase(),
@@ -9,6 +10,9 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  if (!rateLimit(`login:${clientIp(req)}`, 10, 60_000)) {
+    return tooManyRequests("Too many sign-in attempts. Wait a minute and try again.");
+  }
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

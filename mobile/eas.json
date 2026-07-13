@@ -12,6 +12,9 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://plate3d-production.up.railway.app"
       }
     },
     "production": {
@@ -20,7 +23,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://YOUR-DEPLOYED-DOMAIN.com"
+        "EXPO_PUBLIC_API_URL": "https://plate3d-production.up.railway.app"
       }
     }
   },

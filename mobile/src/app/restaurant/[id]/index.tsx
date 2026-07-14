@@ -14,6 +14,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter, Stack } from "expo-rou
 import * as WebBrowser from "expo-web-browser";
 import { api, mediaUrl, API_URL, RestaurantFull, MenuItem } from "@/lib/api";
 import { localToday } from "@/lib/upgrade";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { Badge, BadgeTone, Button, Card, EmptyState, Icon, IconCircle, Chip, Input } from "@/components/ui";
 import { colors, font, GlyphName, radius } from "@/lib/theme";
 
@@ -46,6 +47,7 @@ export default function MenuEditor() {
   const [loading, setLoading] = useState(true);
   const [newCategory, setNewCategory] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
+  const keyboardPad = useKeyboardPadding();
   const [renaming, setRenaming] = useState<{
     id: string;
     name: string;
@@ -152,7 +154,7 @@ export default function MenuEditor() {
       <Stack.Screen options={{ title: restaurant.name }} />
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
-        contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 60 + keyboardPad }}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={load} tintColor={colors.accent} />
         }
@@ -314,7 +316,7 @@ export default function MenuEditor() {
 
       {/* Edit category overlay: name + serving window */}
       {renaming && (
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { paddingBottom: 24 + keyboardPad }]}>
           <Card style={{ width: "100%", padding: 18 }}>
             <Input
               label="Category name"

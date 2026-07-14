@@ -28,6 +28,8 @@
       },
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
       "predictiveBackGestureEnabled": false
@@ -65,6 +67,12 @@
         "projectId": "2478ee53-8791-4910-be4c-4520a5eafa75"
       }
     },
-    "owner": "malika_nish"
+    "owner": "malika_nish",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2478ee53-8791-4910-be4c-4520a5eafa75"
+    }
   }
 }

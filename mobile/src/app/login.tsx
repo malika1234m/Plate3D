@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,11 +10,13 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { api, setToken } from "@/lib/api";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { Button, Card, Input } from "@/components/ui";
 import { colors, font } from "@/lib/theme";
 
 export default function Login() {
   const router = useRouter();
+  const keyboardPad = useKeyboardPadding();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,11 +36,15 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          keyboardPad > 0 && { justifyContent: "flex-start", paddingTop: 24, paddingBottom: 24 + keyboardPad },
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.hero}>
           <Image source={require("../../assets/images/plate-logo.png")} style={styles.logoImg} />
           <Text style={styles.logo} allowFontScaling={false}>
@@ -55,7 +59,10 @@ export default function Login() {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
             placeholder="you@restaurant.com"
           />
           <Input
@@ -63,6 +70,10 @@ export default function Login() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="current-password"
+            textContentType="password"
             placeholder="••••••••"
           />
           <Button
@@ -80,7 +91,7 @@ export default function Login() {
           </Text>
         </Pressable>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

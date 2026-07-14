@@ -39,11 +39,27 @@ async function request<T>(
   if (token) headers.Authorization = `Bearer ${token}`;
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method: options.method ?? "GET",
-    headers,
-    body: options.formData ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
-  });
+  // Don't hang forever on dead connections. Uploads get room for big videos.
+  const controller = new AbortController();
+  const timeoutMs = options.formData ? 10 * 60_000 : 20_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: options.method ?? "GET",
+      headers,
+      body: options.formData ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(0, "The request timed out — check your connection and try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

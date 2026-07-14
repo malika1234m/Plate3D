@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
+import { MenuBootOverlay } from "./MenuBootOverlay";
 
 export type PublicModifierOption = {
   id: string;
@@ -792,6 +793,9 @@ export function MenuClient({
       }}
     >
       <Script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js" />
+
+      {/* Branded boot screen — stays up until images/fonts are actually ready */}
+      <MenuBootOverlay />
 
       {/* Top bar */}
       <header

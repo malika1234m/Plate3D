@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { api, setToken } from "@/lib/api";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { Button, Card, Input } from "@/components/ui";
 import { colors, font, radius } from "@/lib/theme";
 
@@ -19,6 +18,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function Register() {
   const router = useRouter();
+  const keyboardPad = useKeyboardPadding();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,11 +57,16 @@ export default function Register() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          // Anchor to top while the keyboard is open so fields never hide behind it.
+          keyboardPad > 0 && { justifyContent: "flex-start", paddingTop: 24, paddingBottom: 24 + keyboardPad },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <Image source={require("../../assets/images/plate-logo.png")} style={styles.logoImg} />
           <View style={styles.stepChip}>
@@ -101,8 +106,10 @@ export default function Register() {
           <Input
             label="Password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(v) => setPassword(v.replace(/\s/g, ""))}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
             autoComplete="new-password"
             textContentType="newPassword"
             placeholder="At least 8 characters"
@@ -112,8 +119,10 @@ export default function Register() {
           <Input
             label="Confirm password"
             value={confirm}
-            onChangeText={setConfirm}
+            onChangeText={(v) => setConfirm(v.replace(/\s/g, ""))}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
             autoComplete="new-password"
             textContentType="newPassword"
             placeholder="Re-enter your password"
@@ -128,13 +137,13 @@ export default function Register() {
           />
         </Card>
 
-        <Pressable onPress={() => router.back()} style={{ marginTop: 26 }}>
+        <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 26 }}>
           <Text style={styles.switch}>
             Already have an account? <Text style={styles.switchAccent}>Sign in</Text>
           </Text>
         </Pressable>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

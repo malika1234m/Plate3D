@@ -13,7 +13,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
-import { api, mediaUrl, setToken, API_URL, Restaurant, User } from "@/lib/api";
+import { api, ApiError, mediaUrl, setToken, API_URL, Restaurant, User } from "@/lib/api";
 import { startUpgrade } from "@/lib/upgrade";
 import { Badge, Button, Card, EmptyState, Icon, IconCircle } from "@/components/ui";
 import { colors, font, GlyphName, radius } from "@/lib/theme";
@@ -41,10 +41,15 @@ export default function Restaurants() {
       setRestaurants(restaurants);
       api.me().then(({ user }) => setUser(user)).catch(() => {});
       api.billing().then(setBilling).catch(() => {});
-    } catch {
-      // Session expired — return to login
-      await setToken(null);
-      router.replace("/login");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        // Session expired — return to login
+        await setToken(null);
+        router.replace("/login");
+      } else {
+        // Network problem — keep the session, let the user retry
+        Alert.alert("Connection problem", "Couldn't load your restaurants. Pull down to retry.");
+      }
     } finally {
       setLoading(false);
     }

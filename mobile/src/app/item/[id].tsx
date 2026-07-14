@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "re
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { api, MenuItem } from "@/lib/api";
 import { handleUpgradeError } from "@/lib/upgrade";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { Badge, BadgeTone, Button, Card, IconCircle } from "@/components/ui";
 import { ModifierEditor } from "@/components/modifier-editor";
 import {
@@ -32,6 +33,7 @@ export default function EditDish() {
   const [uploadingStory, setUploadingStory] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const keyboardPad = useKeyboardPadding();
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
@@ -63,13 +65,19 @@ export default function EditDish() {
   }, [id, stopPolling]);
 
   useEffect(() => {
-    api.getItem(id).then(({ item }) => {
-      setItem(item);
-      setDraft(draftFromItem(item));
-      if (item.modelStatus === "PROCESSING") startPolling();
-    });
+    api
+      .getItem(id)
+      .then(({ item }) => {
+        setItem(item);
+        setDraft(draftFromItem(item));
+        if (item.modelStatus === "PROCESSING") startPolling();
+      })
+      .catch(() => {
+        Alert.alert("Could not load dish", "Check your connection and try again.");
+        router.back();
+      });
     return stopPolling;
-  }, [id, startPolling, stopPolling]);
+  }, [id, router, startPolling, stopPolling]);
 
   if (!item || !draft)
     return (
@@ -131,7 +139,11 @@ export default function EditDish() {
     }
   };
 
-  const reloadItem = () => api.getItem(id).then(({ item }) => setItem(item));
+  const reloadItem = () =>
+    api
+      .getItem(id)
+      .then(({ item }) => setItem(item))
+      .catch(() => {});
 
   const addStoryVideo = () =>
     chooseSource(async (source) => {
@@ -186,7 +198,7 @@ export default function EditDish() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 60 + keyboardPad }}
       keyboardShouldPersistTaps="handled"
     >
       {/* 3D model */}

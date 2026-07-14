@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { api } from "@/lib/api";
 import { handleUpgradeError } from "@/lib/upgrade";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { Button, Card, IconCircle, Input } from "@/components/ui";
 import { colors, font, radius } from "@/lib/theme";
 
@@ -12,6 +13,7 @@ export default function NewRestaurant() {
   const insets = useSafeAreaInsets();
   const { onboarding } = useLocalSearchParams<{ onboarding?: string }>();
   const isOnboarding = onboarding === "1";
+  const keyboardPad = useKeyboardPadding();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -22,10 +24,12 @@ export default function NewRestaurant() {
   const [touched, setTouched] = useState(false);
 
   const nameError = touched && !name.trim() ? "Give your restaurant a name." : "";
+  const currencyOk = /^[A-Za-z]{3}$/.test(currency.trim());
+  const currencyError = touched && !currencyOk ? "Use a 3-letter code like USD, EUR, LKR." : "";
 
   const submit = async () => {
     setTouched(true);
-    if (!name.trim()) return;
+    if (!name.trim() || !currencyOk) return;
     setLoading(true);
     try {
       const { restaurant } = await api.createRestaurant({
@@ -53,7 +57,7 @@ export default function NewRestaurant() {
         contentContainerStyle={{
           padding: 16,
           paddingTop: isOnboarding ? insets.top + 24 : 16,
-          paddingBottom: 60,
+          paddingBottom: 60 + keyboardPad,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -117,6 +121,7 @@ export default function NewRestaurant() {
             onChangeText={setCurrency}
             placeholder="USD"
             autoCapitalize="characters"
+            error={currencyError}
             hint="ISO code shown next to prices — USD, EUR, GBP…"
           />
         </Card>

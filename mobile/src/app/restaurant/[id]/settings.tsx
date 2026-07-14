@@ -5,6 +5,7 @@ import * as WebBrowser from "expo-web-browser";
 import { api, mediaUrl, API_URL, RestaurantFull } from "@/lib/api";
 import { Button, Card, Chip, Icon, Input, SectionHeader } from "@/components/ui";
 import { captureMedia, chooseSource } from "@/components/dish-form";
+import { useKeyboardPadding } from "@/lib/keyboard";
 import { colors, font, radius } from "@/lib/theme";
 
 const ACCENT_PRESETS = [
@@ -30,10 +31,17 @@ export default function Settings() {
   const [restaurant, setRestaurant] = useState<RestaurantFull | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingBrand, setUploadingBrand] = useState<"logo" | "cover" | null>(null);
+  const keyboardPad = useKeyboardPadding();
 
   useEffect(() => {
-    api.getRestaurant(id).then(({ restaurant }) => setRestaurant(restaurant));
-  }, [id]);
+    api
+      .getRestaurant(id)
+      .then(({ restaurant }) => setRestaurant(restaurant))
+      .catch(() => {
+        Alert.alert("Could not load settings", "Check your connection and try again.");
+        router.back();
+      });
+  }, [id, router]);
 
   if (!restaurant)
     return (
@@ -46,6 +54,10 @@ export default function Settings() {
     setRestaurant((r) => (r ? { ...r, ...patch } : r));
 
   const save = async () => {
+    if (!/^[A-Za-z]{3}$/.test(restaurant.currency.trim())) {
+      Alert.alert("Check the currency", "Use a 3-letter code like USD, EUR, LKR.");
+      return;
+    }
     setSaving(true);
     try {
       await api.updateRestaurant(id, {
@@ -116,7 +128,7 @@ export default function Settings() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 60 + keyboardPad }}
       keyboardShouldPersistTaps="handled"
     >
       <SectionHeader title="Basics" />

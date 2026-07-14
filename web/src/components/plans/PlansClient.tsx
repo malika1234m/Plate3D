@@ -19,6 +19,7 @@ const plans = [
     features: [
       "1 restaurant",
       "Unlimited dishes & categories",
+      "Dish photos on your menu",
       "360° video menus, auto-edited",
       "QR code for every table",
       "Your own look — themes, colors, captions",
@@ -44,6 +45,7 @@ const plans = [
 const comparison: { label: string; free: string | boolean; pro: string | boolean }[] = [
   { label: "Restaurants", free: "1", pro: "Up to 10" },
   { label: "Dishes & categories", free: "Unlimited", pro: "Unlimited" },
+  { label: "Dish photos", free: true, pro: true },
   { label: "Auto-edited dish videos", free: true, pro: true },
   { label: "QR code menu", free: true, pro: true },
   { label: "Custom themes & colors", free: true, pro: true },

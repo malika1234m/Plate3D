@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -18,12 +18,17 @@ export default function QrScreen() {
   const [qr, setQr] = useState<{ menuUrl: string; qrDataUrl: string } | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setError("");
     api
       .getQr(id)
       .then(setQr)
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load QR code"));
   }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const share = async () => {
     if (!qr) return;
@@ -36,9 +41,12 @@ export default function QrScreen() {
   return (
     <View style={styles.container}>
       {error ? (
-        <Text style={{ color: colors.danger, textAlign: "center", fontFamily: font.medium }}>
-          {error}
-        </Text>
+        <>
+          <Text style={{ color: colors.danger, textAlign: "center", fontFamily: font.medium }}>
+            {error}
+          </Text>
+          <Button title="Try again" variant="secondary" onPress={load} style={{ marginTop: 16 }} />
+        </>
       ) : !qr ? (
         <ActivityIndicator color={colors.accent} size="large" />
       ) : (

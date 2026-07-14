@@ -148,8 +148,8 @@ export function DishForm({
         </Pressable>
       </View>
       <Text style={styles.mediaTip}>
-        Tip: place the plate on a table and walk slowly around it while filming. The photo is used
-        to build the 3D model; the video is shown while the model is being prepared.
+        The photo appears on your menu for every plan — and on Pro it also becomes the 3D model.
+        Filming tip: place the plate on a table and walk slowly around it.
       </Text>
 
       <Input

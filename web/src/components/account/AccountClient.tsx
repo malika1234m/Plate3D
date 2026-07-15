@@ -316,9 +316,23 @@ export function AccountClient() {
             </div>
 
             {!billing.billingConfigured && (
-              <p className="mt-6 rounded-xl px-4 py-3 text-sm font-semibold" style={{ background: "rgba(224,82,63,0.12)", color: "#ef6a58" }}>
-                Payments aren&apos;t switched on for this server yet. (Stripe keys not configured.)
-              </p>
+              <div
+                className="mt-6 rounded-[20px] border p-6"
+                style={{ borderColor: "rgba(240,118,46,0.35)", background: "rgba(240,118,46,0.06)" }}
+              >
+                <p className="text-sm font-bold text-ink">Plans are activated personally right now</p>
+                <p className="mt-1.5 text-sm text-ink-dim leading-relaxed">
+                  While we finish online card payments, we set plans up for you directly — usually within a few
+                  hours. Tell us which plan you want and we&apos;ll activate it on your account.
+                </p>
+                <a
+                  href="mailto:malikanishnatha4@gmail.com?subject=Activate my Plate3D plan&body=Hi! Please activate a plan on my Plate3D account. The email I signed up with is: ______ and I'd like the ______ plan (Basic / Starter / Pro)."
+                  className="mt-4 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white"
+                  style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
+                >
+                  Contact us to activate
+                </a>
+              </div>
             )}
 
             {/* Plan chooser */}
@@ -358,10 +372,22 @@ export function AccountClient() {
                       <div className="mt-6 flex items-center justify-center gap-2 rounded-full bg-emerald-500/12 py-3 text-sm font-bold text-emerald-400">
                         {tick} Current plan
                       </div>
+                    ) : !billing.billingConfigured ? (
+                      <a
+                        href={`mailto:malikanishnatha4@gmail.com?subject=Activate the ${p.name} plan&body=Hi! Please activate the ${p.name} plan on my Plate3D account. The email I signed up with is: ______`}
+                        className="mt-6 flex w-full items-center justify-center rounded-full py-3.5 text-sm font-bold transition-colors"
+                        style={
+                          p.highlight
+                            ? { background: "linear-gradient(100deg, var(--accent), #f5934f)", color: "#fff" }
+                            : { border: "1px solid var(--navy-700)", color: "var(--ink)" }
+                        }
+                      >
+                        Contact us for {p.name}
+                      </a>
                     ) : (
                       <button
                         onClick={() => upgrade(p.id)}
-                        disabled={working !== null || !billing.billingConfigured}
+                        disabled={working !== null}
                         className="mt-6 w-full rounded-full py-3.5 text-sm font-bold transition-colors disabled:opacity-50"
                         style={
                           p.highlight
@@ -378,8 +404,10 @@ export function AccountClient() {
             </div>
 
             <p className="mt-8 text-center text-xs text-ink-faint">
-              Payments are handled securely by Stripe. Cancel anytime — no contracts. Your published menu stays live for
-              customers even if your plan lapses.
+              {billing.billingConfigured
+                ? "Payments are handled securely by Stripe. Cancel anytime — no contracts. "
+                : "Cancel anytime — no contracts. "}
+              Your published menu stays live for customers even if your plan lapses.
             </p>
           </section>
         )}

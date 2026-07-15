@@ -9,7 +9,8 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { api, setToken } from "@/lib/api";
+import * as WebBrowser from "expo-web-browser";
+import { api, API_URL, setToken } from "@/lib/api";
 import { useKeyboardPadding } from "@/lib/keyboard";
 import { Button, Card, Input } from "@/components/ui";
 import { colors, font, radius } from "@/lib/theme";
@@ -135,6 +136,16 @@ export default function Register() {
             loading={loading}
             style={{ marginTop: 4 }}
           />
+          <Text style={styles.consent}>
+            By continuing you agree to our{" "}
+            <Text
+              style={styles.consentLink}
+              onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/privacy`)}
+            >
+              privacy policy
+            </Text>
+            .
+          </Text>
         </Card>
 
         <Pressable onPress={() => router.replace("/login")} style={{ marginTop: 26 }}>
@@ -182,4 +193,13 @@ const styles = StyleSheet.create({
     fontFamily: font.regular,
   },
   switchAccent: { color: colors.accent, fontFamily: font.semibold },
+  consent: {
+    color: colors.textFaint,
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 12,
+    lineHeight: 17,
+    fontFamily: font.regular,
+  },
+  consentLink: { color: colors.textDim, textDecorationLine: "underline" },
 });

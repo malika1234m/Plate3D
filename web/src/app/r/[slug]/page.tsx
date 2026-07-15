@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MenuClient } from "@/components/menu/MenuClient";
+import { planOf } from "@/lib/plans";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -11,6 +12,7 @@ async function getMenu(slug: string) {
   return prisma.restaurant.findUnique({
     where: { slug },
     include: {
+      owner: { select: { plan: true } },
       categories: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -33,7 +35,10 @@ async function getMenu(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const restaurant = await getMenu(slug);
-  if (!restaurant) return { title: "Menu not found" };
+  // notFound() here runs before streaming starts, so bogus slugs get a real
+  // HTTP 404 — thrown from the page body it would be too late (shell already
+  // streamed with 200 because of loading.tsx).
+  if (!restaurant || !restaurant.isPublished) notFound();
   return {
     title: `${restaurant.name} — Menu`,
     description:
@@ -46,6 +51,7 @@ export default async function MenuPage({ params }: Props) {
   const restaurant = await getMenu(slug);
   if (!restaurant || !restaurant.isPublished) notFound();
 
-  const { ownerId: _ownerId, ...pub } = restaurant;
-  return <MenuClient restaurant={pub} />;
+  const { ownerId: _ownerId, owner, ...pub } = restaurant;
+  const orderingEnabled = planOf(owner) === "pro";
+  return <MenuClient restaurant={pub} orderingEnabled={orderingEnabled} />;
 }

@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import { api, ApiError, mediaUrl, setToken, API_URL, Restaurant, User } from "@/lib/api";
 import { startUpgrade } from "@/lib/upgrade";
+import { maybeShowTrialNudge } from "@/lib/trial-nudge";
 import { Badge, Button, Card, EmptyState, Icon, IconCircle } from "@/components/ui";
 import { colors, font, GlyphName, radius } from "@/lib/theme";
 
@@ -35,12 +36,25 @@ export default function Restaurants() {
   const [billing, setBilling] = useState<Billing | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const { restaurants } = await api.listRestaurants();
+      if (!isActive()) return;
       setRestaurants(restaurants);
-      api.me().then(({ user }) => setUser(user)).catch(() => {});
-      api.billing().then(setBilling).catch(() => {});
+      api
+        .me()
+        .then(({ user }) => {
+          if (isActive()) setUser(user);
+        })
+        .catch(() => {});
+      api
+        .billing()
+        .then((b) => {
+          if (!isActive()) return;
+          setBilling(b);
+          maybeShowTrialNudge(b);
+        })
+        .catch(() => {});
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         // Session expired — return to login
@@ -57,23 +71,13 @@ export default function Restaurants() {
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      let active = true;
+      load(() => active);
+      return () => {
+        active = false;
+      };
     }, [load])
   );
-
-  const logout = () => {
-    Alert.alert("Sign out", "You'll need your email and password to sign back in.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign out",
-        style: "destructive",
-        onPress: async () => {
-          await setToken(null);
-          router.replace("/login");
-        },
-      },
-    ]);
-  };
 
   const first = restaurants[0];
 
@@ -101,7 +105,7 @@ export default function Restaurants() {
           title: "Put dishes in 3D",
           body: "Customers spin them right on the menu.",
           onPress: () =>
-            billing?.plan === "pro" ? router.push(`/restaurant/${first.id}`) : startUpgrade(),
+            billing?.accessActive ? router.push(`/restaurant/${first.id}`) : startUpgrade(),
         },
         {
           icon: "qr_code",
@@ -143,8 +147,8 @@ export default function Restaurants() {
               </Text>
             ) : null}
           </View>
-          <Pressable onPress={logout} style={styles.logoutBtn} hitSlop={6}>
-            <Icon name="logout" size={18} color={colors.textDim} />
+          <Pressable onPress={() => router.push("/account")} style={styles.logoutBtn} hitSlop={6}>
+            <Icon name="person" size={19} color={colors.textDim} />
           </Pressable>
         </View>
 
@@ -274,7 +278,7 @@ export default function Restaurants() {
 
         {/* Plan */}
         {billing &&
-          (billing.plan === "free" ? (
+          (!billing.subscribed ? (
             <Pressable onPress={startUpgrade} style={{ marginTop: 22 }}>
               {({ pressed }) => (
                 <LinearGradient
@@ -288,10 +292,14 @@ export default function Restaurants() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.proTitle} allowFontScaling={false}>
-                      Go Pro — dishes in 3D & AR
+                      {billing.accessActive
+                        ? `Free trial — ${billing.trialDaysLeft} day${billing.trialDaysLeft === 1 ? "" : "s"} left`
+                        : "Your free month has ended"}
                     </Text>
                     <Text style={styles.proBody}>
-                      Photoreal 3D models customers can spin, plus up to 10 restaurants.
+                      {billing.accessActive
+                        ? "Pick a plan from $2/mo to keep everything after the trial."
+                        : "Choose a plan from $2/mo to keep editing. Your menu is still live for customers."}
                     </Text>
                   </View>
                   <Icon name="chevron_right" size={22} color="#fff" />
@@ -303,20 +311,18 @@ export default function Restaurants() {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
                 <IconCircle name="workspace_premium" size={42} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.planTitle}>Pro plan</Text>
+                  <Text style={styles.planTitle}>{billing.label} plan</Text>
                   <Text style={styles.planMeta}>
-                    Everything unlocked · {billing.usage.restaurants}/
-                    {billing.limits.maxRestaurants} restaurants
+                    {billing.plan === "starter"
+                      ? `${billing.usage.videos}/${billing.limits.maxVideos} videos · ${billing.usage.models}/${billing.limits.maxModels} 3D models`
+                      : `Unlimited videos & 3D · ${billing.usage.restaurants}/${billing.limits.maxRestaurants} restaurants`}
                   </Text>
                 </View>
                 <Button
                   title="Manage"
                   small
                   variant="secondary"
-                  onPress={async () => {
-                    const { url } = await api.billingPortal().catch(() => ({ url: "" }));
-                    if (url) WebBrowser.openBrowserAsync(url);
-                  }}
+                  onPress={startUpgrade}
                 />
               </View>
             </Card>

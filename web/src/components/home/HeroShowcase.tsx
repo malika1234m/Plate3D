@@ -101,8 +101,10 @@ export function HeroShowcase({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={d.imageUrl} alt={d.name} className="h-full w-full object-cover" />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-lg font-bold text-ink-faint">
-                  {d.name.charAt(0)}
+                <span className="flex h-full w-full items-center justify-center text-ink-faint" aria-hidden>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                    <path d="M7 3v7a2 2 0 0 0 2 2v9M5 3v4M9 3v4M16 3c-1.5 1.5-2 3.5-2 6 0 2 .8 3 2 3v9M16 3v18" />
+                  </svg>
                 </span>
               )}
             </span>

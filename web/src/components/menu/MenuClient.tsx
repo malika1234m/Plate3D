@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Script from "next/script";
 import { MenuBootOverlay } from "./MenuBootOverlay";
+import { OrderCart, CartLine, cartKey } from "./OrderCart";
 
 export type PublicModifierOption = {
   id: string;
@@ -162,6 +163,25 @@ function SoldOutRibbon() {
 }
 
 function Thumb({ item, className }: { item: PublicItem; className: string }) {
+  // Live 3D preview when a model exists — auto-rotates, taps pass through to the card.
+  if (has3D(item)) {
+    return (
+      <div className={className} style={{ pointerEvents: "none", background: "var(--m-raised)" }} aria-hidden>
+        <model-viewer
+          src={item.modelUrl}
+          poster={item.imageUrl || undefined}
+          auto-rotate
+          auto-rotate-delay="0"
+          rotation-per-second="24deg"
+          interaction-prompt="none"
+          disable-zoom
+          shadow-intensity="0.7"
+          style={{ width: "100%", height: "100%" }}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
   if (item.imageUrl) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={item.imageUrl} alt="" className={className} loading="lazy" />;
@@ -170,13 +190,16 @@ function Thumb({ item, className }: { item: PublicItem; className: string }) {
   if (video) {
     return <video src={video} className={className} muted playsInline preload="metadata" />;
   }
+  // No media at all: quiet cutlery mark — never words.
   return (
     <div
-      className={`${className} flex items-center justify-center text-2xl font-bold`}
-      style={{ color: "var(--m-faint)", ...poppins }}
+      className={`${className} flex items-center justify-center`}
+      style={{ color: "var(--m-faint)", background: "var(--m-raised)" }}
       aria-hidden
     >
-      {item.name.charAt(0).toUpperCase()}
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <path d="M7 3v7a2 2 0 0 0 2 2v9M5 3v4M9 3v4M16 3c-1.5 1.5-2 3.5-2 6 0 2 .8 3 2 3v9M16 3v18" />
+      </svg>
     </div>
   );
 }
@@ -209,6 +232,7 @@ function DishStage({
   initialTab,
   onNavigate,
   onClose,
+  onAdd,
 }: {
   items: PublicItem[];
   index: number;
@@ -217,6 +241,7 @@ function DishStage({
   initialTab?: MediaTab;
   onNavigate: (index: number) => void;
   onClose: () => void;
+  onAdd?: (item: PublicItem, optionIds: string[], optionNames: string[], unitPrice: number) => void;
 }) {
   const item = items[index];
   const soldOut = isSoldOut(item, now);
@@ -443,6 +468,27 @@ function DishStage({
             {currency.format(total)}
           </p>
 
+          {onAdd && !soldOut && (
+            <button
+              onClick={() => {
+                const optionIds = Object.values(sel).flat();
+                const optionNames = item.modifierGroups.flatMap((g) =>
+                  g.options.filter((o) => (sel[g.id] ?? []).includes(o.id)).map((o) => o.name)
+                );
+                onAdd(item, optionIds, optionNames, total);
+                onClose();
+              }}
+              className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-full py-3.5 text-[15px] font-extrabold text-white transition-transform hover:scale-[1.01]"
+              style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M6 8h12l1.2 12.2a1 1 0 0 1-1 1.1H5.8a1 1 0 0 1-1-1.1L6 8Z" />
+                <path d="M9 10V6.5a3 3 0 0 1 6 0V10" />
+              </svg>
+              Add to order — {currency.format(total)}
+            </button>
+          )}
+
           {/* Choose your view */}
           {tabs.length > 1 && (
             <>
@@ -630,17 +676,24 @@ function DishCard({
   currency,
   soldOut,
   onOpen,
+  onQuickAdd,
+  inCart = 0,
 }: {
   item: PublicItem;
   currency: Intl.NumberFormat;
   soldOut: boolean;
   onOpen: () => void;
+  onQuickAdd?: () => void;
+  inCart?: number;
 }) {
   return (
     <button
       onClick={onOpen}
       className={`group text-left rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-1 flex flex-col ${soldOut ? "opacity-60" : ""}`}
-      style={{ background: "var(--m-surface)", borderColor: "var(--m-border)" }}
+      style={{
+        background: "var(--m-surface)",
+        borderColor: inCart > 0 ? "color-mix(in srgb, var(--accent) 55%, transparent)" : "var(--m-border)",
+      }}
     >
       <div className="relative m-3 mb-0 rounded-xl overflow-hidden aspect-[4/3]" style={{ background: "var(--m-raised)" }}>
         <Thumb item={item} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -665,12 +718,26 @@ function DishCard({
           <span className="text-lg font-extrabold" style={{ color: "var(--accent)" }}>
             {currency.format(item.price)}
           </span>
+          {/* One tap adds simple dishes; dishes with options open the viewer to pick. */}
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-full border text-lg leading-none"
-            style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
-            aria-hidden
+            role={onQuickAdd ? "button" : undefined}
+            aria-label={onQuickAdd ? `Add ${item.name} to order` : undefined}
+            onClick={
+              onQuickAdd
+                ? (e) => {
+                    e.stopPropagation();
+                    onQuickAdd();
+                  }
+                : undefined
+            }
+            className="flex h-8 min-w-8 items-center justify-center rounded-full border px-1 text-[15px] font-bold leading-none transition-transform hover:scale-110"
+            style={
+              inCart > 0
+                ? { background: "var(--accent)", borderColor: "var(--accent)", color: "#fff" }
+                : { borderColor: "var(--accent)", color: "var(--accent)" }
+            }
           >
-            +
+            {inCart > 0 ? `×${inCart}` : "+"}
           </span>
         </div>
       </div>
@@ -683,17 +750,24 @@ function DishRow({
   currency,
   soldOut,
   onOpen,
+  onQuickAdd,
+  inCart = 0,
 }: {
   item: PublicItem;
   currency: Intl.NumberFormat;
   soldOut: boolean;
   onOpen: () => void;
+  onQuickAdd?: () => void;
+  inCart?: number;
 }) {
   return (
     <button
       onClick={onOpen}
       className={`group w-full text-left flex gap-4 rounded-2xl p-3 border transition-all duration-200 hover:-translate-y-0.5 ${soldOut ? "opacity-60" : ""}`}
-      style={{ background: "var(--m-surface)", borderColor: "var(--m-border)" }}
+      style={{
+        background: "var(--m-surface)",
+        borderColor: inCart > 0 ? "color-mix(in srgb, var(--accent) 55%, transparent)" : "var(--m-border)",
+      }}
     >
       <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 rounded-xl overflow-hidden" style={{ background: "var(--m-raised)" }}>
         <Thumb item={item} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -719,9 +793,31 @@ function DishRow({
             {item.description}
           </p>
         )}
-        <div className="mt-1.5 flex gap-2 text-[11px]" style={{ color: "var(--m-faint)" }}>
+        <div className="mt-1.5 flex items-center gap-2 text-[11px]" style={{ color: "var(--m-faint)" }}>
           {item.isVegetarian && <span className="text-green-500">● veg</span>}
           {item.isSpicy && <span className="text-red-500">● spicy</span>}
+          {(onQuickAdd || inCart > 0) && (
+            <span
+              role={onQuickAdd ? "button" : undefined}
+              aria-label={onQuickAdd ? `Add ${item.name} to order` : undefined}
+              onClick={
+                onQuickAdd
+                  ? (e) => {
+                      e.stopPropagation();
+                      onQuickAdd();
+                    }
+                  : undefined
+              }
+              className="ml-auto rounded-full border px-3 py-1 text-[11px] font-bold transition-transform hover:scale-105"
+              style={
+                inCart > 0
+                  ? { background: "var(--accent)", borderColor: "var(--accent)", color: "#fff" }
+                  : { borderColor: "var(--accent)", color: "var(--accent)" }
+              }
+            >
+              {inCart > 0 ? `${inCart} in order` : "+ Add"}
+            </span>
+          )}
         </div>
       </div>
     </button>
@@ -741,8 +837,10 @@ const catIcon = (
 
 export function MenuClient({
   restaurant,
+  orderingEnabled = false,
 }: {
   restaurant: PublicRestaurant & { categories: PublicCategory[] };
+  orderingEnabled?: boolean;
 }) {
   const currency = useCurrency(restaurant.currency);
   const theme = THEMES[restaurant.theme] ?? THEMES.midnight;
@@ -758,9 +856,12 @@ export function MenuClient({
   // Time-based state (serving windows, sold-out) activates after hydration.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    setNow(new Date());
+    const raf = requestAnimationFrame(() => setNow(new Date()));
     const t = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(t);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(t);
+    };
   }, []);
 
   const visibleCategories = categories
@@ -776,6 +877,45 @@ export function MenuClient({
     const index = allItems.findIndex((i) => i.id === item.id);
     if (index >= 0) setStage({ index, tab });
   };
+
+  // ---------- Ordering (Pro menus) ----------
+  const [cart, setCart] = useState<CartLine[]>([]);
+  const addToCart = (
+    item: PublicItem,
+    optionIds: string[],
+    optionNames: string[],
+    unitPrice: number
+  ) => {
+    const key = cartKey(item.id, optionIds);
+    setCart((c) => {
+      const existing = c.find((l) => l.key === key);
+      if (existing) {
+        return c.map((l) => (l.key === key ? { ...l, quantity: l.quantity + 1 } : l));
+      }
+      return [
+        ...c,
+        { key, itemId: item.id, name: item.name, imageUrl: item.imageUrl, unitPrice, quantity: 1, optionIds, optionNames },
+      ];
+    });
+  };
+  const changeQty = (key: string, delta: number) =>
+    setCart((c) =>
+      c
+        .map((l) => (l.key === key ? { ...l, quantity: l.quantity + delta } : l))
+        .filter((l) => l.quantity > 0)
+    );
+
+  // Simple dishes (no options) can be added straight from the card; dishes
+  // with options open the viewer so the customer picks first.
+  const quickAddFor = (item: PublicItem) =>
+    orderingEnabled && item.modifierGroups.length === 0 && !isSoldOut(item, now)
+      ? () => addToCart(item, [], [], item.price)
+      : undefined;
+  const cartQty = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const l of cart) m[l.itemId] = (m[l.itemId] ?? 0) + l.quantity;
+    return m;
+  }, [cart]);
 
   const sidebarEntries = [
     { id: "all", name: "All Items", count: allItems.length },
@@ -833,7 +973,8 @@ export function MenuClient({
         </div>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-5 sm:px-8 pb-20 flex gap-8">
+      {/* Extra bottom room so the floating cart bar never covers the last dishes */}
+      <div className={`max-w-[1400px] mx-auto px-5 sm:px-8 flex gap-8 ${cart.length > 0 ? "pb-44" : "pb-20"}`}>
         {/* Sidebar (desktop) */}
         <aside className="hidden lg:block w-60 shrink-0 pt-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "var(--accent)", ...poppins }}>
@@ -875,6 +1016,30 @@ export function MenuClient({
               Rotate, zoom and explore each dish before you order. Tap any dish to open it.
             </p>
           </div>
+
+          {orderingEnabled && (
+            <div
+              className="mt-4 rounded-2xl border p-5"
+              style={{
+                borderColor: "color-mix(in srgb, var(--accent) 35%, transparent)",
+                background: "color-mix(in srgb, var(--accent) 6%, var(--m-surface))",
+              }}
+            >
+              <p className="text-sm font-bold flex items-center gap-2" style={{ ...poppins }}>
+                <span style={{ color: "var(--accent)" }} aria-hidden>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 8h12l1.2 12.2a1 1 0 0 1-1 1.1H5.8a1 1 0 0 1-1-1.1L6 8Z" />
+                    <path d="M9 10V6.5a3 3 0 0 1 6 0V10" />
+                  </svg>
+                </span>
+                Order from your seat
+              </p>
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--m-faint)" }}>
+                Build your order right here and send it straight to the kitchen. Pay at the venue —
+                no app, no sign-up.
+              </p>
+            </div>
+          )}
         </aside>
 
         {/* Main */}
@@ -888,6 +1053,23 @@ export function MenuClient({
               <p className="mt-1 text-sm" style={{ color: "var(--m-faint)" }}>
                 Explore our delicious dishes in immersive 3D
               </p>
+              {orderingEnabled && (
+                <span
+                  className="mt-2.5 inline-flex items-center gap-2.5 rounded-full border px-3.5 py-1.5 text-xs font-bold"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)",
+                    background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+                    color: "var(--accent)",
+                    ...poppins,
+                  }}
+                >
+                  <span className="relative flex h-2 w-2" aria-hidden>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ background: "var(--accent)" }} />
+                    <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "var(--accent)" }} />
+                  </span>
+                  Ordering open — tap + to order from your seat
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               {(
@@ -991,6 +1173,8 @@ export function MenuClient({
                         currency={currency}
                         soldOut={isSoldOut(item, now)}
                         onOpen={() => openItem(item)}
+                        onQuickAdd={quickAddFor(item)}
+                        inCart={orderingEnabled ? (cartQty[item.id] ?? 0) : 0}
                       />
                     ) : (
                       <DishRow
@@ -999,6 +1183,8 @@ export function MenuClient({
                         currency={currency}
                         soldOut={isSoldOut(item, now)}
                         onOpen={() => openItem(item)}
+                        onQuickAdd={quickAddFor(item)}
+                        inCart={orderingEnabled ? (cartQty[item.id] ?? 0) : 0}
                       />
                     )
                   )}
@@ -1038,6 +1224,7 @@ export function MenuClient({
 
       {stage && (
         <DishStage
+          onAdd={orderingEnabled ? addToCart : undefined}
           key={allItems[stage.index]?.id}
           items={allItems}
           index={stage.index}
@@ -1048,6 +1235,18 @@ export function MenuClient({
           onClose={() => setStage(null)}
         />
       )}
+
+      {orderingEnabled && (
+        <OrderCart
+          cart={cart}
+          currency={currency}
+          slug={restaurant.slug}
+          restaurantName={restaurant.name}
+          onChangeQty={changeQty}
+          onClear={() => setCart([])}
+        />
+      )}
+
     </div>
   );
 }

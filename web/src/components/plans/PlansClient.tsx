@@ -9,62 +9,84 @@ import { Reveal } from "@/components/home/Dynamic";
 
 const plans = [
   {
-    id: "free",
-    name: "Free",
-    tagline: "A real menu, live today",
-    price: "$0",
-    period: "forever",
+    id: "basic",
+    name: "Basic",
+    tagline: "Your menu, live today",
+    price: "$2",
+    period: "per month",
     highlight: false,
-    cta: { label: "Try the demo menu", href: "/r/demo-bistro" },
+    cta: { label: "Start free month", href: "/r/demo-bistro" },
     features: [
       "1 restaurant",
       "Unlimited dishes & categories",
       "Dish photos on your menu",
-      "360° video menus, auto-edited",
-      "QR code for every table",
-      "Your own look — themes, colors, captions",
+      "2 dish videos + 2 photoreal 3D models",
+      "QR code & your own look",
+    ],
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    tagline: "Bring your best dishes to life",
+    price: "$12",
+    period: "per month",
+    highlight: true,
+    cta: { label: "Sign in to upgrade", href: "/account" },
+    features: [
+      "Everything in Basic",
+      "Up to 10 dish videos, auto-edited",
+      "Up to 10 photoreal 3D models",
+      "AR — dishes on the customer's table",
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    tagline: "The full 3D experience",
+    tagline: "The full 3D experience, plus live ordering",
     price: "$29",
     period: "per month",
-    highlight: true,
-    cta: { label: "Upgrade in the app", href: "/r/demo-bistro" },
+    highlight: false,
+    cta: { label: "Sign in to upgrade", href: "/account" },
     features: [
-      "Everything in Free",
-      "Photoreal 3D models of your dishes",
-      "AR — dishes on the customer's table",
+      "Everything in Starter",
+      "Unlimited videos & 3D models",
+      "Your entire menu in 3D",
+      "Live table ordering — customers order straight from the menu",
+      "Kitchen orders screen in the app",
       "Up to 10 restaurants",
     ],
   },
 ] as const;
 
-const comparison: { label: string; free: string | boolean; pro: string | boolean }[] = [
-  { label: "Restaurants", free: "1", pro: "Up to 10" },
-  { label: "Dishes & categories", free: "Unlimited", pro: "Unlimited" },
-  { label: "Dish photos", free: true, pro: true },
-  { label: "Auto-edited dish videos", free: true, pro: true },
-  { label: "QR code menu", free: true, pro: true },
-  { label: "Custom themes & colors", free: true, pro: true },
-  { label: "Photoreal 3D dish models", free: false, pro: true },
-  { label: "AR — view dishes on the table", free: false, pro: true },
+const comparison: { label: string; basic: string | boolean; starter: string | boolean; pro: string | boolean }[] = [
+  { label: "Restaurants", basic: "1", starter: "1", pro: "Up to 10" },
+  { label: "Dishes & categories", basic: "Unlimited", starter: "Unlimited", pro: "Unlimited" },
+  { label: "Dish photos", basic: true, starter: true, pro: true },
+  { label: "QR code menu", basic: true, starter: true, pro: true },
+  { label: "Custom themes & colors", basic: true, starter: true, pro: true },
+  { label: "Auto-edited dish videos", basic: "2", starter: "Up to 10", pro: "Unlimited" },
+  { label: "Photoreal 3D dish models", basic: "2", starter: "Up to 10", pro: "Unlimited" },
+  { label: "AR — view dishes on the table", basic: true, starter: true, pro: true },
+  { label: "Live table ordering from the menu", basic: false, starter: false, pro: true },
+  { label: "Kitchen orders screen in the app", basic: false, starter: false, pro: true },
 ];
 
 const faqs = [
   {
-    q: "Can I really run my menu on the Free plan?",
-    a: "Yes. Free is a complete menu — unlimited dishes, auto-edited videos, your QR code, and your own look. Pro adds the photoreal 3D and AR layer on top.",
+    q: "How does the free month work?",
+    a: "Create your account and you get 30 days of full access — no card needed. When the month ends, pick a plan from $2/mo to keep editing. Your published menu stays live for customers either way.",
   },
   {
-    q: "How do I upgrade to Pro?",
+    q: "How do I subscribe?",
     a: "From the Plate3D app for restaurant owners. Payment is handled securely by Stripe, and you can cancel anytime — no contracts.",
   },
   {
     q: "Do my customers need to install anything?",
     a: "Never. They scan the QR code at the table and your menu opens instantly in their phone's browser — 3D, AR, videos and all.",
+  },
+  {
+    q: "What is live table ordering?",
+    a: "On Pro menus, customers don't just browse — they build an order right from the 3D menu, add their table number and any notes, and send it. It appears instantly on the Orders screen in your Plate3D app, where the kitchen moves it from New to Preparing to Done. Payment stays at the venue, exactly as you run it today.",
   },
   {
     q: "How do the 3D models get made?",
@@ -251,13 +273,21 @@ export function PlansClient() {
             PLATE<span className="text-accent">3D</span>
           </span>
         </Link>
-        <Link
-          href="/r/demo-bistro"
-          className="rounded-full px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold tracking-wide text-white whitespace-nowrap"
-          style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
-        >
-          VIEW DEMO MENU
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/account"
+            className="rounded-full border border-navy-700 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold tracking-wide text-ink-dim hover:text-ink transition-colors whitespace-nowrap"
+          >
+            SIGN IN
+          </Link>
+          <Link
+            href="/r/demo-bistro"
+            className="rounded-full px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold tracking-wide text-white whitespace-nowrap"
+            style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
+          >
+            VIEW DEMO MENU
+          </Link>
+        </div>
       </header>
 
       <main className="relative z-10 max-w-[1200px] mx-auto w-full px-6 sm:px-10 flex-1">
@@ -278,13 +308,13 @@ export function PlansClient() {
             </span>
           </h1>
           <p className="mt-6 text-base sm:text-lg text-ink-dim leading-relaxed max-w-xl mx-auto">
-            Start free with a full video menu and your own QR code. Go Pro when you want your
-            dishes in photoreal 3D — on the table, before they order.
+            Every plan starts with a free month — full access, cancel anytime. From $2/mo after
+            that, up to your entire menu in photoreal 3D.
           </p>
         </section>
 
         {/* Plan cards */}
-        <section className="mt-14 sm:mt-20 grid gap-6 lg:gap-8 md:grid-cols-2 max-w-4xl mx-auto items-stretch">
+        <section className="mt-14 sm:mt-20 grid gap-6 lg:gap-8 md:grid-cols-3 max-w-5xl mx-auto items-stretch">
           {plans.map((plan) => (
             <Reveal key={plan.id} className="h-full">
               <div className="relative h-full">
@@ -349,8 +379,9 @@ export function PlansClient() {
                     <th className="text-left pb-4 pl-5 font-semibold text-ink-faint uppercase tracking-wider text-xs">
                       Feature
                     </th>
-                    <th className="pb-4 w-36 text-center font-bold text-ink">Free</th>
-                    <th className="pb-4 w-36 text-center">
+                    <th className="pb-4 w-32 text-center font-bold text-ink">Basic</th>
+                    <th className="pb-4 w-32 text-center font-bold text-ink">Starter</th>
+                    <th className="pb-4 w-32 text-center">
                       <span
                         className="inline-block rounded-full px-4 py-1 font-bold text-white"
                         style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
@@ -370,17 +401,17 @@ export function PlansClient() {
                       >
                         {row.label}
                       </td>
-                      {([row.free, row.pro] as const).map((v, col) => (
+                      {([row.basic, row.starter, row.pro] as const).map((v, col) => (
                         <td
                           key={col}
                           className={`py-4 text-center border-t border-navy-800 ${
-                            col === 1 ? "bg-accent/[0.04]" : ""
+                            col === 2 ? "bg-accent/[0.04]" : ""
                           }`}
                         >
                           {typeof v === "string" ? (
-                            <span className={col === 1 ? "font-semibold text-ink" : "text-ink-dim"}>{v}</span>
+                            <span className={col === 2 ? "font-semibold text-ink" : "text-ink-dim"}>{v}</span>
                           ) : v ? (
-                            <span className={`inline-flex ${col === 1 ? "text-accent" : "text-sky"}`}>{tick}</span>
+                            <span className={`inline-flex ${col === 2 ? "text-accent" : "text-sky"}`}>{tick}</span>
                           ) : (
                             <span className="inline-flex text-ink-faint/50">{dash}</span>
                           )}

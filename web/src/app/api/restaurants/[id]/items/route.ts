@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { PLANS, planOf, upgradeRequired, countVideos, withinLimit, accessExpired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -21,6 +22,8 @@ export async function POST(req: Request, { params }: Params) {
   const { id } = await params;
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
   const restaurant = await prisma.restaurant.findFirst({
     where: { id, ownerId: user.id },
   });
@@ -35,6 +38,19 @@ export async function POST(req: Request, { params }: Params) {
     );
   }
   const { categoryId, ...data } = parsed.data;
+
+  if (data.videoUrl) {
+    const plan = PLANS[planOf(user)];
+    if (plan.maxVideos === 0) {
+      return upgradeRequired("Menu videos are available on Starter and Pro.");
+    }
+    const used = await countVideos(user.id);
+    if (!withinLimit(plan.maxVideos, used)) {
+      return upgradeRequired(
+        `Your ${plan.label} plan includes ${plan.maxVideos} dish videos and you've used ${used}. Upgrade to Pro for unlimited videos.`
+      );
+    }
+  }
 
   const category = await prisma.category.findFirst({
     where: { id: categoryId, restaurantId: id },

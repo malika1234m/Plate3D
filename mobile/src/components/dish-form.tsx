@@ -93,11 +93,32 @@ const SWITCHES: { label: string; key: "isVegetarian" | "isSpicy" | "isAvailable"
 export function DishForm({
   draft,
   onChange,
+  onRemoveMedia,
 }: {
   draft: DishDraft;
   onChange: (patch: Partial<DishDraft>) => void;
+  /** When provided (edit screen), removal persists to the server immediately. */
+  onRemoveMedia?: (kind: "image" | "video") => void;
 }) {
   const [uploading, setUploading] = useState<"image" | "video" | null>(null);
+
+  const confirmRemove = (kind: "image" | "video") => {
+    Alert.alert(
+      kind === "image" ? "Remove photo?" : "Remove 360° video?",
+      "It will no longer appear on your menu.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => {
+            if (onRemoveMedia) onRemoveMedia(kind);
+            else onChange(kind === "image" ? { imageUrl: "" } : { videoUrl: "" });
+          },
+        },
+      ]
+    );
+  };
 
   const addMedia = (kind: "image" | "video") =>
     chooseSource(async (source) => {
@@ -120,7 +141,12 @@ export function DishForm({
       <View style={styles.mediaRow}>
         <Pressable style={styles.mediaBox} onPress={() => addMedia("image")}>
           {draft.imageUrl ? (
-            <Image source={{ uri: mediaUrl(draft.imageUrl) }} style={styles.mediaFill} />
+            <>
+              <Image source={{ uri: mediaUrl(draft.imageUrl) }} style={styles.mediaFill} />
+              <Pressable style={styles.removeChip} hitSlop={8} onPress={() => confirmRemove("image")}>
+                <Icon name="close" size={15} color="#fff" />
+              </Pressable>
+            </>
           ) : (
             <View style={styles.mediaInner}>
               <Icon name="photo_camera" size={26} color={colors.accent} />
@@ -131,6 +157,11 @@ export function DishForm({
           )}
         </Pressable>
         <Pressable style={styles.mediaBox} onPress={() => addMedia("video")}>
+          {draft.videoUrl ? (
+            <Pressable style={styles.removeChip} hitSlop={8} onPress={() => confirmRemove("video")}>
+              <Icon name="close" size={15} color="#fff" />
+            </Pressable>
+          ) : null}
           <View style={styles.mediaInner}>
             <Icon
               name="videocam"
@@ -230,6 +261,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     fontFamily: font.medium,
+  },
+  removeChip: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(10,10,12,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   mediaTip: {
     color: colors.textFaint,

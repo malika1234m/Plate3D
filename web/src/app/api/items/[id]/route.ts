@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { PLANS, planOf, upgradeRequired, countVideos, withinLimit, accessExpired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -52,6 +53,10 @@ export async function GET(req: Request, { params }: Params) {
 
 export async function PATCH(req: Request, { params }: Params) {
   const { id } = await params;
+  const user = await getAuthUser(req);
+  if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
   const item = await ownedItem(req, id);
   if (!item) return unauthorized();
 
@@ -68,6 +73,22 @@ export async function PATCH(req: Request, { params }: Params) {
       return Response.json({ error: "Category not found" }, { status: 404 });
     }
   }
+  // Attaching a video to a dish that had none counts against the plan.
+  if (parsed.data.videoUrl && !item.videoUrl && !item.storyVideoUrl) {
+    {
+      const plan = PLANS[planOf(user)];
+      if (plan.maxVideos === 0) {
+        return upgradeRequired("Menu videos are available on Starter and Pro.");
+      }
+      const used = await countVideos(user.id);
+      if (!withinLimit(plan.maxVideos, used)) {
+        return upgradeRequired(
+          `Your ${plan.label} plan includes ${plan.maxVideos} dish videos and you've used ${used}. Upgrade to Pro for unlimited videos.`
+        );
+      }
+    }
+  }
+
   const { soldOutToday, ...data } = parsed.data;
   const updated = await prisma.menuItem.update({
     where: { id },

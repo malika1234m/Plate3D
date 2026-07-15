@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "plate3d",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#14100c",
+    "backgroundColor": "#070708",
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.plate3d.app",
@@ -19,16 +19,13 @@
     },
     "android": {
       "package": "com.plate3d.app",
-      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#14100c",
+        "backgroundColor": "#070708",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
@@ -51,11 +48,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#14100c",
+          "backgroundColor": "#070708",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

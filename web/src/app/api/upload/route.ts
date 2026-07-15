@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { accessExpired } from "@/lib/plans";
 import { uploadsDir } from "@/lib/uploads";
 
 /**
@@ -27,6 +28,8 @@ const ALLOWED: Record<string, string> = {
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

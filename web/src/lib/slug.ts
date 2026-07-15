@@ -2,6 +2,8 @@ import { prisma } from "./db";
 
 export function slugify(name: string): string {
   return name
+    .normalize("NFKD") // é -> e + combining accent, then strip the accents
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")

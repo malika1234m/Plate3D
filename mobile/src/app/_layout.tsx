@@ -1,5 +1,4 @@
-import { DarkTheme, ThemeProvider } from "expo-router";
-import { Stack } from "expo-router";
+import { DarkTheme, ThemeProvider, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -63,9 +62,12 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="restaurants" options={{ headerShown: false }} />
+        <Stack.Screen name="account" options={{ title: "Account" }} />
+        <Stack.Screen name="plans" options={{ title: "Choose your plan" }} />
         <Stack.Screen name="restaurant/new" options={{ title: "New Restaurant" }} />
         <Stack.Screen name="restaurant/[id]/index" options={{ title: "Menu" }} />
         <Stack.Screen name="restaurant/[id]/qr" options={{ title: "QR Code" }} />
+        <Stack.Screen name="restaurant/[id]/orders" options={{ title: "Orders" }} />
         <Stack.Screen name="restaurant/[id]/settings" options={{ title: "Restaurant Settings" }} />
         <Stack.Screen name="item/new" options={{ title: "New Dish" }} />
         <Stack.Screen name="item/[id]" options={{ title: "Edit Dish" }} />

@@ -140,6 +140,26 @@ export type MenuItem = {
 
 export type RestaurantFull = Restaurant & { categories: Category[] };
 
+export type OrderLine = {
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  options: string[];
+  lineTotal: number;
+};
+
+export type Order = {
+  id: string;
+  code: string;
+  tableNumber: string;
+  customerName: string;
+  note: string;
+  status: "NEW" | "PREPARING" | "DONE" | "CANCELLED";
+  items: OrderLine[];
+  total: number;
+  createdAt: string;
+};
+
 /* ---------- Auth ---------- */
 
 export const api = {
@@ -157,6 +177,15 @@ export const api = {
 
   me: () => request<{ user: User }>("/api/me"),
 
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ ok: true; token: string }>("/api/me", {
+      method: "PATCH",
+      body: { currentPassword, newPassword },
+    }),
+
+  deleteAccount: (password: string) =>
+    request<{ ok: true }>("/api/me", { method: "DELETE", body: { password } }),
+
   /* ---------- Restaurants ---------- */
 
   listRestaurants: () => request<{ restaurants: Restaurant[] }>("/api/restaurants"),
@@ -172,6 +201,15 @@ export const api = {
 
   deleteRestaurant: (id: string) =>
     request<{ ok: true }>(`/api/restaurants/${id}`, { method: "DELETE" }),
+
+  listOrders: (restaurantId: string) =>
+    request<{ orders: Order[] }>(`/api/restaurants/${restaurantId}/orders`),
+
+  updateOrder: (orderId: string, status: Order["status"]) =>
+    request<{ order: { id: string; status: string } }>(`/api/orders/${orderId}`, {
+      method: "PATCH",
+      body: { status },
+    }),
 
   getQr: (id: string) =>
     request<{ menuUrl: string; qrDataUrl: string }>(`/api/restaurants/${id}/qr?format=json`),
@@ -226,18 +264,25 @@ export const api = {
 
   billing: () =>
     request<{
-      plan: "free" | "pro";
+      plan: "basic" | "starter" | "pro";
       label: string;
-      limits: { maxRestaurants: number; gen3d: boolean };
-      usage: { restaurants: number };
+      limits: { maxRestaurants: number; maxModels: number; maxVideos: number };
+      usage: { restaurants: number; models: number; videos: number };
+      subscribed: boolean;
+      trialDaysLeft: number;
+      accessActive: boolean;
       billingConfigured: boolean;
     }>("/api/billing"),
 
-  checkout: () => request<{ url: string }>("/api/billing/checkout", { method: "POST" }),
+  checkout: (plan: "basic" | "starter" | "pro" = "pro") =>
+    request<{ url: string }>("/api/billing/checkout", { method: "POST", body: { plan } }),
 
   billingPortal: () => request<{ url: string }>("/api/billing/portal", { method: "POST" }),
 
   deleteItem: (id: string) => request<{ ok: true }>(`/api/items/${id}`, { method: "DELETE" }),
+
+  delete3d: (itemId: string) =>
+    request<{ item: MenuItem }>(`/api/items/${itemId}/generate-3d`, { method: "DELETE" }),
 
   generate3d: (itemId: string) =>
     request<{ item: MenuItem }>(`/api/items/${itemId}/generate-3d`, { method: "POST" }),

@@ -1,17 +1,9 @@
 import { Alert } from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import { api, ApiError } from "./api";
+import { router } from "expo-router";
+import { ApiError } from "./api";
 
-export async function startUpgrade() {
-  try {
-    const { url } = await api.checkout();
-    if (url) await WebBrowser.openBrowserAsync(url);
-  } catch (err) {
-    Alert.alert(
-      "Billing unavailable",
-      err instanceof Error ? err.message : "Try again later"
-    );
-  }
+export function startUpgrade() {
+  router.push("/plans");
 }
 
 /**

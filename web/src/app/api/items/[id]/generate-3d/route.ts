@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
 import { gen3dEnabled, startGeneration, checkGeneration } from "@/lib/gen3d";
 import { saveFromUrl } from "@/lib/uploads";
-import { PLANS, planOf, upgradeRequired } from "@/lib/plans";
+import { PLANS, planOf, upgradeRequired, countModels, withinLimit, accessExpired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -19,13 +19,25 @@ export async function POST(req: Request, { params }: Params) {
   const { id } = await params;
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
   const item = await ownedItem(req, id);
   if (!item) return unauthorized();
 
-  if (!PLANS[planOf(user)].gen3d) {
+  const plan = PLANS[planOf(user)];
+  if (plan.maxModels === 0) {
     return upgradeRequired(
-      "3D model generation is a Pro feature. Upgrade to turn your dish photos into spinnable 3D models — your 360° videos stay free."
+      "3D models are available on Starter and Pro. Upgrade to turn your dish photos into spinnable 3D models."
     );
+  }
+  // Regenerating an existing model doesn't consume a new slot.
+  if (item.modelStatus !== "READY" && item.modelStatus !== "PROCESSING") {
+    const used = await countModels(user.id);
+    if (!withinLimit(plan.maxModels, used)) {
+      return upgradeRequired(
+        `Your ${plan.label} plan includes ${plan.maxModels} 3D models and you've used ${used}. Upgrade to Pro for unlimited 3D dishes.`
+      );
+    }
   }
 
   if (!gen3dEnabled()) {
@@ -105,4 +117,17 @@ export async function GET(req: Request, { params }: Params) {
     return Response.json({ item: updated, error: result.error });
   }
   return Response.json({ item, progress: result.progress });
+}
+
+/** Remove the dish's 3D model — frees the plan slot. Files stay on disk (harmless orphans). */
+export async function DELETE(req: Request, { params }: Params) {
+  const { id } = await params;
+  const item = await ownedItem(req, id);
+  if (!item) return unauthorized();
+
+  const updated = await prisma.menuItem.update({
+    where: { id },
+    data: { modelStatus: "NONE", modelUrl: "", modelUsdzUrl: "", modelJobId: "" },
+  });
+  return Response.json({ item: updated });
 }

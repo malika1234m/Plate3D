@@ -2,13 +2,25 @@ import { getAuthUser, unauthorized } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { stripe, stripeEnabled, billingUnavailable } from "@/lib/stripe";
 
-/** Start a Stripe Checkout session for the Pro subscription. */
+const PRICE_IDS: Record<string, string | undefined> = {
+  basic: process.env.STRIPE_PRICE_ID_BASIC,
+  starter: process.env.STRIPE_PRICE_ID_STARTER,
+  pro: process.env.STRIPE_PRICE_ID_PRO ?? process.env.STRIPE_PRICE_ID,
+};
+
+/** Start a Stripe Checkout session for a paid plan (starter or pro). */
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
   if (!stripeEnabled()) return billingUnavailable();
-  if (user.plan === "pro") {
-    return Response.json({ error: "You are already on Pro." }, { status: 400 });
+
+  const body = await req.json().catch(() => ({}));
+  const target =
+    body?.plan === "basic" ? "basic" : body?.plan === "starter" ? "starter" : "pro";
+  const priceId = PRICE_IDS[target];
+  if (!priceId) return billingUnavailable();
+  if (user.plan === target) {
+    return Response.json({ error: `You are already on ${target}.` }, { status: 400 });
   }
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -31,10 +43,10 @@ export async function POST(req: Request) {
   const session = await stripe().checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${base}/billing/success`,
     cancel_url: `${base}/billing/cancelled`,
-    metadata: { userId: user.id },
+    metadata: { userId: user.id, plan: target },
   });
 
   return Response.json({ url: session.url });

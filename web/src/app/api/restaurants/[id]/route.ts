@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { accessExpired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -54,6 +55,10 @@ const updateSchema = z.object({
 
 export async function PATCH(req: Request, { params }: Params) {
   const { id } = await params;
+  const user = await getAuthUser(req);
+  if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
   const restaurant = await ownedRestaurant(req, id);
   if (!restaurant) return unauthorized();
 

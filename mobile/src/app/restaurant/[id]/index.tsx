@@ -24,7 +24,9 @@ function statusBadge(item: MenuItem): { text: string; tone: BadgeTone } {
   if (item.modelStatus === "PROCESSING") return { text: "3D BUILDING…", tone: "accent" };
   if (item.modelStatus === "FAILED") return { text: "3D FAILED", tone: "danger" };
   if (item.videoUrl) return { text: "360° VIDEO", tone: "sky" };
-  return { text: "NO MEDIA", tone: "neutral" };
+  if (item.storyVideoUrl) return { text: "VIDEO", tone: "sky" };
+  if (item.imageUrl) return { text: "PHOTO", tone: "neutral" };
+  return { text: "NO MEDIA", tone: "danger" };
 }
 
 const SCHEDULE_PRESETS: [string, string, string][] = [
@@ -34,7 +36,8 @@ const SCHEDULE_PRESETS: [string, string, string][] = [
   ["Dinner", "16:00", "23:00"],
 ];
 
-const ACTIONS: { label: string; icon: GlyphName; to: "qr" | "preview" | "settings" }[] = [
+const ACTIONS: { label: string; icon: GlyphName; to: "orders" | "qr" | "preview" | "settings" }[] = [
+  { label: "Orders", icon: "receipt", to: "orders" },
   { label: "QR code", icon: "qr_code", to: "qr" },
   { label: "Preview", icon: "visibility", to: "preview" },
   { label: "Settings", icon: "settings", to: "settings" },
@@ -143,7 +146,8 @@ export default function MenuEditor() {
       </View>
     );
 
-  const onAction = (to: "qr" | "preview" | "settings") => {
+  const onAction = (to: "orders" | "qr" | "preview" | "settings") => {
+    if (to === "orders") router.push(`/restaurant/${id}/orders`);
     if (to === "qr") router.push(`/restaurant/${id}/qr`);
     if (to === "preview") WebBrowser.openBrowserAsync(`${API_URL}/r/${restaurant.slug}`);
     if (to === "settings") router.push(`/restaurant/${id}/settings`);

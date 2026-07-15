@@ -2,7 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
 import { uniqueSlug } from "@/lib/slug";
-import { PLANS, planOf, upgradeRequired } from "@/lib/plans";
+import { PLANS, planOf, upgradeRequired, accessExpired } from "@/lib/plans";
 
 export async function GET(req: Request) {
   const user = await getAuthUser(req);
@@ -31,6 +31,8 @@ const createSchema = z.object({
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
 
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
@@ -42,9 +44,9 @@ export async function POST(req: Request) {
   const count = await prisma.restaurant.count({ where: { ownerId: user.id } });
   if (count >= PLANS[plan].maxRestaurants) {
     return upgradeRequired(
-      plan === "free"
-        ? "The free plan includes one restaurant. Upgrade to Pro to add more."
-        : "You have reached the maximum number of restaurants on your plan."
+      plan === "pro"
+        ? "You have reached the maximum number of restaurants on your plan."
+        : `The ${PLANS[plan].label} plan includes one restaurant. Upgrade to Pro to add more.`
     );
   }
 

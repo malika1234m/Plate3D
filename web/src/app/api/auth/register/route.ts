@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signToken } from "@/lib/auth";
 import { rateLimit, clientIp, tooManyRequests } from "@/lib/ratelimit";
+import { TRIAL_DAYS } from "@/lib/plans";
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -33,9 +34,14 @@ export async function POST(req: Request) {
   }
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash: await bcrypt.hash(password, 10) },
+    data: {
+      name,
+      email,
+      passwordHash: await bcrypt.hash(password, 10),
+      trialEndsAt: new Date(Date.now() + TRIAL_DAYS * 86_400_000),
+    },
   });
-  const token = await signToken(user.id);
+  const token = await signToken(user.id, user.tokenVersion);
   return Response.json(
     { token, user: { id: user.id, name: user.name, email: user.email } },
     { status: 201 }

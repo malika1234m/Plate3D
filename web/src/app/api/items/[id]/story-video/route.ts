@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
 import { autoEditVideo } from "@/lib/video";
 import { uploadsDir } from "@/lib/uploads";
+import { PLANS, planOf, upgradeRequired, countVideos, withinLimit, accessExpired } from "@/lib/plans";
 
 export const maxDuration = 300; // video processing can take a while
 
@@ -18,10 +19,28 @@ export async function POST(req: Request, { params }: Params) {
   const { id } = await params;
   const user = await getAuthUser(req);
   if (!user) return unauthorized();
+  const expired = accessExpired(user);
+  if (expired) return expired;
   const item = await prisma.menuItem.findFirst({
     where: { id, restaurant: { ownerId: user.id } },
   });
   if (!item) return unauthorized();
+
+  const plan = PLANS[planOf(user)];
+  if (plan.maxVideos === 0) {
+    return upgradeRequired(
+      "Menu videos are available on Starter and Pro. Upgrade to bring your dishes to life."
+    );
+  }
+  // Replacing this dish's existing video doesn't consume a new slot.
+  if (!item.videoUrl && !item.storyVideoUrl) {
+    const used = await countVideos(user.id);
+    if (!withinLimit(plan.maxVideos, used)) {
+      return upgradeRequired(
+        `Your ${plan.label} plan includes ${plan.maxVideos} dish videos and you've used ${used}. Upgrade to Pro for unlimited videos.`
+      );
+    }
+  }
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
@@ -32,10 +51,17 @@ export async function POST(req: Request, { params }: Params) {
     return Response.json({ error: "Video too large (max 200 MB)" }, { status: 413 });
   }
 
+  // Only accept actual video uploads — this endpoint feeds ffmpeg.
+  const VIDEO_EXTS = [".mp4", ".mov", ".webm", ".m4v", ".3gp"];
+  const rawExt = path.extname(file.name).toLowerCase() || ".mp4";
+  const looksLikeVideo = file.type.startsWith("video/") || VIDEO_EXTS.includes(rawExt);
+  if (!looksLikeVideo || (rawExt && !VIDEO_EXTS.includes(rawExt))) {
+    return Response.json({ error: "Unsupported video format" }, { status: 415 });
+  }
+
   const dir = uploadsDir();
   await mkdir(dir, { recursive: true });
   const key = crypto.randomBytes(12).toString("hex");
-  const rawExt = path.extname(file.name).toLowerCase() || ".mp4";
   const rawPath = path.join(dir, `raw-${key}${rawExt}`);
   const outName = `story-${key}.mp4`;
   const outPath = path.join(dir, outName);

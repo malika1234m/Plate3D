@@ -18,11 +18,15 @@ export default function QrScreen() {
   const [qr, setQr] = useState<{ menuUrl: string; qrDataUrl: string } | null>(null);
   const [error, setError] = useState("");
 
+  // setState only runs inside the async callbacks (after the effect returns),
+  // not synchronously during the effect — avoids cascading-render warnings.
   const load = useCallback(() => {
-    setError("");
     api
       .getQr(id)
-      .then(setQr)
+      .then((r) => {
+        setQr(r);
+        setError("");
+      })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load QR code"));
   }, [id]);
 

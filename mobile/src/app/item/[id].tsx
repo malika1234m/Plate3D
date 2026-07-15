@@ -166,6 +166,28 @@ export default function EditDish() {
       }
     });
 
+  const remove3d = () => {
+    Alert.alert(
+      "Remove 3D model",
+      "Customers will see the dish's video or photo instead. This frees a 3D slot on your plan.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { item: updated } = await api.delete3d(id);
+              setItem(updated);
+            } catch (err) {
+              Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const removeStoryVideo = async () => {
     try {
       const { item: updated } = await api.updateItem(id, { storyVideoUrl: "" });
@@ -229,14 +251,25 @@ export default function EditDish() {
             />
           </View>
         ) : (
-          <Button
-            title={item.modelStatus === "READY" ? "Regenerate 3D model" : "Generate 3D model"}
-            icon="view_in_ar"
-            variant="secondary"
-            onPress={generate3d}
-            loading={generating}
-            style={{ marginTop: 14 }}
-          />
+          <>
+            <Button
+              title={item.modelStatus === "READY" ? "Regenerate 3D model" : "Generate 3D model"}
+              icon="view_in_ar"
+              variant="secondary"
+              onPress={generate3d}
+              loading={generating}
+              style={{ marginTop: 14 }}
+            />
+            {item.modelStatus === "READY" && (
+              <Button
+                title="Remove 3D model"
+                icon="delete"
+                variant="danger"
+                onPress={remove3d}
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </>
         )}
       </Card>
 
@@ -245,7 +278,7 @@ export default function EditDish() {
         <View style={styles.statusHeader}>
           <IconCircle name="movie" size={42} color={colors.sky} background={colors.skySoft} />
           <View style={{ flex: 1, gap: 5 }}>
-            <Text style={styles.statusTitle}>“How it's made” video</Text>
+            <Text style={styles.statusTitle}>“How it&apos;s made” video</Text>
             <Badge
               label={item.storyVideoUrl ? "ON YOUR MENU" : "NOT ADDED"}
               tone={item.storyVideoUrl ? "success" : "neutral"}
@@ -274,7 +307,22 @@ export default function EditDish() {
         ) : null}
       </Card>
 
-      <DishForm draft={draft} onChange={onChange} />
+      <DishForm
+        draft={draft}
+        onChange={onChange}
+        onRemoveMedia={async (kind) => {
+          try {
+            const { item: updated } = await api.updateItem(
+              id,
+              kind === "image" ? { imageUrl: "" } : { videoUrl: "" }
+            );
+            setItem(updated);
+            setDraft((d) => (d ? { ...d, [kind === "image" ? "imageUrl" : "videoUrl"]: "" } : d));
+          } catch (err) {
+            Alert.alert("Something went wrong", err instanceof Error ? err.message : "Check your connection and try again.");
+          }
+        }}
+      />
 
       <ModifierEditor
         itemId={id}

@@ -14,10 +14,27 @@ model User {
   passwordHash         String
   name                 String
   plan                 String       @default("free") // free | pro
+  tokenVersion         Int          @default(0) // bump to revoke all existing sessions
+  trialEndsAt          DateTime?    // 30-day free trial; null = legacy account
   stripeCustomerId     String       @default("")
   stripeSubscriptionId String       @default("")
   createdAt            DateTime     @default(now())
   restaurants          Restaurant[]
+}
+
+model Order {
+  id           String     @id @default(cuid())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+  tableNumber  String     @default("")
+  customerName String     @default("")
+  note         String     @default("")
+  status       String     @default("NEW") // NEW | PREPARING | DONE | CANCELLED
+  items        String // JSON snapshot: [{ name, quantity, unitPrice, options: [name], lineTotal }]
+  total        Float
+  createdAt    DateTime   @default(now())
+
+  @@index([restaurantId, createdAt])
 }
 
 model Restaurant {
@@ -42,6 +59,7 @@ model Restaurant {
   ownerId     String
   categories  Category[]
   items       MenuItem[]
+  orders      Order[]
 }
 
 model Category {

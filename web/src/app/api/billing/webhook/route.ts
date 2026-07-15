@@ -29,11 +29,13 @@ export async function POST(req: Request) {
     case "checkout.session.completed": {
       const session = event.data.object;
       const userId = session.metadata?.userId;
+      const meta = session.metadata?.plan;
+      const plan = meta === "basic" ? "basic" : meta === "starter" ? "starter" : "pro";
       if (userId && session.subscription) {
         await prisma.user.update({
           where: { id: userId },
           data: {
-            plan: "pro",
+            plan,
             stripeSubscriptionId: String(session.subscription),
           },
         });
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
       const sub = event.data.object;
       await prisma.user.updateMany({
         where: { stripeSubscriptionId: sub.id },
-        data: { plan: "free", stripeSubscriptionId: "" },
+        data: { plan: "basic", stripeSubscriptionId: "" },
       });
       break;
     }

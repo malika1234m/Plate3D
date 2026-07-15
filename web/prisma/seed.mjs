@@ -23,8 +23,9 @@ async function main() {
     update: {},
     create: {
       email: "demo@plate3d.app",
-      name: "Demo Owner",
+      name: "Malika",
       passwordHash: await bcrypt.hash("demo1234", 10),
+      plan: "pro",
     },
   });
 

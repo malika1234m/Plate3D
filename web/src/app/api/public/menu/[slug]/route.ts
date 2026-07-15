@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { planOf } from "@/lib/plans";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -8,6 +9,7 @@ export async function GET(_req: Request, { params }: Params) {
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug },
     include: {
+      owner: { select: { plan: true } },
       categories: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -28,6 +30,6 @@ export async function GET(_req: Request, { params }: Params) {
   if (!restaurant || !restaurant.isPublished) {
     return Response.json({ error: "Menu not found" }, { status: 404 });
   }
-  const { ownerId: _ownerId, ...pub } = restaurant;
-  return Response.json({ restaurant: pub });
+  const { ownerId: _ownerId, owner, ...pub } = restaurant;
+  return Response.json({ restaurant: { ...pub, orderingEnabled: planOf(owner) === "pro" } });
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthUser, unauthorized } from "@/lib/auth";
+import { accessExpired } from "@/lib/plans";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,6 +23,10 @@ const schema = z.object({
 });
 
 export async function PATCH(req: Request, { params }: Params) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) return unauthorized();
+  const expired = accessExpired(authUser);
+  if (expired) return expired;
   const { id } = await params;
   const category = await ownedCategory(req, id);
   if (!category) return unauthorized();

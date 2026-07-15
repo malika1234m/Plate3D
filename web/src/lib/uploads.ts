@@ -20,6 +20,9 @@ const MAX_FETCH_BYTES = 150 * 1024 * 1024;
 export async function saveFromUrl(url: string, ext: string): Promise<string> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+  // Reject oversized files before buffering when the server declares a size.
+  const declared = Number(res.headers.get("content-length") ?? 0);
+  if (declared > MAX_FETCH_BYTES) throw new Error("Downloaded file too large");
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.byteLength > MAX_FETCH_BYTES) throw new Error("Downloaded file too large");
   const dir = uploadsDir();

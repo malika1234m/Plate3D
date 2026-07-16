@@ -9,22 +9,12 @@ export const dynamic = "force-dynamic";
 
 async function getLiveData() {
   try {
-    const [demo, restaurants, dishes, dishes3dOrVideo] = await Promise.all([
-      prisma.restaurant.findFirst({
-        where: { slug: "demo-bistro", isPublished: true },
-        include: {
-          items: { where: { isAvailable: true }, orderBy: { sortOrder: "asc" } },
-        },
-      }),
-      prisma.restaurant.count({ where: { isPublished: true } }),
-      prisma.menuItem.count({ where: { isAvailable: true } }),
-      prisma.menuItem.count({
-        where: {
-          isAvailable: true,
-          OR: [{ modelStatus: "READY" }, { NOT: { videoUrl: "" } }, { NOT: { storyVideoUrl: "" } }],
-        },
-      }),
-    ]);
+    const demo = await prisma.restaurant.findFirst({
+      where: { slug: "demo-bistro", isPublished: true },
+      include: {
+        items: { where: { isAvailable: true }, orderBy: { sortOrder: "asc" } },
+      },
+    });
     const showcase: ShowcaseDish[] = (demo?.items ?? []).slice(0, 6).map((i) => ({
       id: i.id,
       name: i.name,
@@ -38,12 +28,11 @@ async function getLiveData() {
     return {
       showcase,
       currency: demo?.currency ?? "USD",
-      stats: { restaurants, dishes, dishes3dOrVideo },
       dish3d,
     };
   } catch {
     // Database not reachable (fresh deploy) — the page still renders fully static
-    return { showcase: [], currency: "USD", stats: null, dish3d: null };
+    return { showcase: [], currency: "USD", dish3d: null };
   }
 }
 
@@ -161,7 +150,7 @@ const steps = [
 const poppins = { fontFamily: "var(--font-poppins)" };
 
 export default async function Home() {
-  const { showcase, currency, stats, dish3d } = await getLiveData();
+  const { showcase, currency, dish3d } = await getLiveData();
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden" style={poppins}>
       {/* ================= HERO ================= */}
@@ -267,28 +256,26 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* ================= LIVE STATS ================= */}
+      {/* ================= PRODUCT PROMISES ================= */}
       <main className="max-w-[1400px] mx-auto w-full px-6 sm:px-10">
-        {stats && (
-          <Reveal>
-            <div className="mt-4 rounded-3xl border border-navy-700 bg-navy-900 px-8 py-8 grid gap-8 sm:grid-cols-3 text-center">
-              {(
-                [
-                  [stats.restaurants, "Restaurants live on Plate3D"],
-                  [stats.dishes, "Dishes on the menu"],
-                  [stats.dishes3dOrVideo, "Dishes in 3D or video"],
-                ] as const
-              ).map(([value, label]) => (
-                <div key={label}>
-                  <p className="text-4xl sm:text-5xl font-extrabold text-accent">
-                    <CountUp value={value} />
-                  </p>
-                  <p className="mt-2 text-xs uppercase tracking-wider text-ink-faint">{label}</p>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        )}
+        <Reveal>
+          <div className="mt-4 rounded-3xl border border-navy-700 bg-navy-900 px-8 py-8 grid gap-8 sm:grid-cols-3 text-center">
+            {(
+              [
+                [0, "", "Apps your customers install"],
+                [10, "s", "From QR scan to a 3D menu"],
+                [30, "", "Days free on every new account"],
+              ] as const
+            ).map(([value, suffix, label]) => (
+              <div key={label}>
+                <p className="text-4xl sm:text-5xl font-extrabold text-accent">
+                  <CountUp value={value} suffix={suffix} />
+                </p>
+                <p className="mt-2 text-xs uppercase tracking-wider text-ink-faint">{label}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
 
         {/* ================= FEATURES ================= */}
         <section id="features" className="pt-24 scroll-mt-10">

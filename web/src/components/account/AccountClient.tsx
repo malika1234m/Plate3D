@@ -250,7 +250,7 @@ export function AccountClient() {
               </button>
               <p className="text-center text-xs text-ink-faint">
                 Use the same email and password as the Plate3D app. New here?{" "}
-                <Link href="/plans" className="text-accent">See the plans</Link>.
+                <Link href="/register" className="text-accent">Create your account</Link> — first month free.
               </p>
             </form>
           </section>

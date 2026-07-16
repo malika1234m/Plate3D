@@ -10,6 +10,7 @@ const NAV = [
   ["Features", "#features"],
   ["For Restaurants", "#for-restaurants"],
   ["Plans & Pricing", "/plans"],
+  ["Sign in", "/login"],
   ["Contact", "#contact"],
 ] as const;
 
@@ -65,11 +66,17 @@ export function NavBar() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/r/demo-bistro"
+            href="/login"
+            className="hidden sm:inline-block rounded-full border border-white/25 px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold tracking-wide text-ink whitespace-nowrap hover:border-white/50 transition-colors"
+          >
+            SIGN IN
+          </Link>
+          <Link
+            href="/register"
             className="rounded-full px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold tracking-wide text-white whitespace-nowrap"
             style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
           >
-            VIEW DEMO MENU
+            GET STARTED FREE
           </Link>
           <button
             onClick={() => setOpen((v) => !v)}

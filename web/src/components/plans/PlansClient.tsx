@@ -15,7 +15,7 @@ const plans = [
     price: "$2",
     period: "per month",
     highlight: false,
-    cta: { label: "Start free month", href: "/r/demo-bistro" },
+    cta: { label: "Start free month", href: "/register" },
     features: [
       "1 restaurant",
       "Unlimited dishes & categories",

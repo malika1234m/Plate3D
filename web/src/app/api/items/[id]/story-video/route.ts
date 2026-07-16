@@ -68,23 +68,25 @@ export async function POST(req: Request, { params }: Params) {
 
   await writeFile(rawPath, Buffer.from(await file.arrayBuffer()));
 
-  let storyVideoUrl = `/uploads/${outName}`;
-  let edited = true;
   try {
     await autoEditVideo(rawPath, outPath);
-    await unlink(rawPath).catch(() => {});
   } catch {
-    // Auto-edit failed (corrupt clip, unsupported codec) — keep the raw video
-    edited = false;
-    storyVideoUrl = `/uploads/raw-${key}${rawExt}`;
+    // Corrupt clip or undecodable codec. Attaching the raw file would put a
+    // dead video on the customer menu — fail loudly so the owner refilms.
+    await unlink(rawPath).catch(() => {});
     await unlink(outPath).catch(() => {});
+    return Response.json(
+      { error: "We couldn't process that video. Try filming again, or pick a different clip." },
+      { status: 422 }
+    );
   }
+  await unlink(rawPath).catch(() => {});
 
   const updated = await prisma.menuItem.update({
     where: { id },
-    data: { storyVideoUrl },
+    data: { storyVideoUrl: `/uploads/${outName}` },
   });
-  return Response.json({ item: updated, edited }, { status: 201 });
+  return Response.json({ item: updated, edited: true }, { status: 201 });
 }
 
 /** Remove the story video from a dish. */

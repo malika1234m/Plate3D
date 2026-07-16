@@ -13,7 +13,10 @@ import { uploadsDir } from "@/lib/uploads";
  * client contract stays the same.
  */
 
-const MAX_BYTES = 100 * 1024 * 1024; // 100 MB — food videos can be large
+// 200 MB: a 60-second 1080p phone capture (the app's 360° limit) commonly
+// lands at 75–130 MB, so 100 MB rejected legitimate films. Matches the
+// story-video route's cap.
+const MAX_BYTES = 200 * 1024 * 1024;
 
 const ALLOWED: Record<string, string> = {
   "image/jpeg": ".jpg",

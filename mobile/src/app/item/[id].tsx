@@ -151,13 +151,11 @@ export default function EditDish() {
       if (!uri) return;
       setUploadingStory(true);
       try {
-        const { item: updated, edited } = await api.uploadStoryVideo(id, uri);
+        const { item: updated } = await api.uploadStoryVideo(id, uri);
         setItem(updated);
         Alert.alert(
-          edited ? "Video ready" : "Video added",
-          edited
-            ? "We auto-edited your clip — trimmed, sped up, and polished. It now plays on your menu."
-            : "Auto-edit could not process this clip, so the original is used on your menu."
+          "Video ready",
+          "We auto-edited your clip — trimmed, sped up, and polished. It now plays on your menu."
         );
       } catch (err) {
         Alert.alert("Upload failed", err instanceof Error ? err.message : "Try again");

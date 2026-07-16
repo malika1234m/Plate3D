@@ -42,4 +42,4 @@ next-env.d.ts
 
 # local data
 prisma/dev.db*
-uploads/
+/uploads/

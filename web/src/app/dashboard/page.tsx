@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DashboardClient } from "@/components/portal/DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Plate3D",
+  title: "Dashboard — GoPlate",
   description: "Manage your restaurants and menus.",
 };
 

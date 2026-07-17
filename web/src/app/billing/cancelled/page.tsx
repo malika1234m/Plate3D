@@ -5,7 +5,7 @@ export default function BillingCancelled() {
         Checkout cancelled
       </h1>
       <p className="mt-3 text-ink-dim max-w-md">
-        No charge was made. You can upgrade any time from the Plate3D app.
+        No charge was made. You can upgrade any time from the GoPlate app.
       </p>
     </main>
   );

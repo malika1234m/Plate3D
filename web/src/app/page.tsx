@@ -120,7 +120,7 @@ const features = [
   },
   {
     title: "Auto-edited kitchen videos",
-    body: "Film the cooking however you like — Plate3D trims, speeds up, and polishes it into a looping clip automatically.",
+    body: "Film the cooking however you like — GoPlate trims, speeds up, and polishes it into a looping clip automatically.",
   },
   {
     title: "Your menu, your look",
@@ -135,7 +135,7 @@ const features = [
 const steps = [
   {
     title: "Film your dish",
-    body: "Open the Plate3D app, place the plate on a table, and record a slow circle around it. Thirty seconds is enough.",
+    body: "Open the GoPlate app, place the plate on a table, and record a slow circle around it. Thirty seconds is enough.",
   },
   {
     title: "We do the magic",
@@ -280,7 +280,7 @@ export default async function Home() {
         {/* ================= FEATURES ================= */}
         <section id="features" className="pt-24 scroll-mt-10">
           <Reveal>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Why Plate3D</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Why GoPlate</p>
             <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold text-ink max-w-2xl leading-tight">
               Everything a modern menu should do
             </h2>
@@ -406,7 +406,7 @@ export default async function Home() {
             <Image src="/app-logo.png" alt="" width={84} height={84} className="mx-auto mb-5" />
             <h2 className="text-3xl sm:text-4xl font-extrabold text-ink">Run your menu from your pocket</h2>
             <p className="mt-3 text-ink-dim max-w-lg mx-auto">
-              The Plate3D app for restaurant owners: build your menu, film your dishes, customize how
+              The GoPlate app for restaurant owners: build your menu, film your dishes, customize how
               it looks, and print your QR code — all from your phone.
             </p>
             <p className="mt-8 inline-block rounded-full border border-navy-700 px-6 py-3 text-sm text-ink-dim">
@@ -423,7 +423,7 @@ export default async function Home() {
         <p className="flex items-center justify-center gap-2.5 text-ink-dim">
           <Image src="/logo.png" alt="" width={36} height={36} className="rounded-lg" />
           <span className="font-extrabold text-ink">
-            PLATE<span className="text-accent">3D</span>
+            <span className="text-accent">Go</span>Plate
           </span>
         </p>
         <p className="mt-3">Interactive 3D menus for restaurants</p>

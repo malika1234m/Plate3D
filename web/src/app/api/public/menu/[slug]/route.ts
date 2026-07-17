@@ -30,6 +30,7 @@ export async function GET(_req: Request, { params }: Params) {
   if (!restaurant || !restaurant.isPublished) {
     return Response.json({ error: "Menu not found" }, { status: 404 });
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured to omit from the public payload
   const { ownerId: _ownerId, owner, ...pub } = restaurant;
   return Response.json({ restaurant: { ...pub, orderingEnabled: planOf(owner) === "pro" } });
 }

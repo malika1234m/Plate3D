@@ -7,7 +7,7 @@
  * the whole web experience.
  */
 
-export const TOKEN_KEY = "plate3d_token";
+export const TOKEN_KEY = "goplate_token";
 
 export class ApiError extends Error {
   status: number;

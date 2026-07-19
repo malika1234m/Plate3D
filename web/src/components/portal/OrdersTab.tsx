@@ -42,6 +42,7 @@ export function OrdersTab({
   }, [restaurantId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount; setState happens after await
     load();
     const t = setInterval(load, 15_000);
     return () => clearInterval(t);

@@ -68,6 +68,47 @@ export function Field({
 export const inputCls =
   "w-full rounded-xl border border-navy-700 bg-navy-800 px-4 py-3 text-sm text-ink outline-none focus:border-accent placeholder:text-ink-faint/60";
 
+/** Inline validation message under a field. */
+export function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="mt-1.5 text-xs font-semibold" style={{ color: "#ef6a58" }}>{message}</p>;
+}
+
+const CURRENCIES = [
+  ["LKR", "Sri Lankan Rupee"],
+  ["USD", "US Dollar"],
+  ["EUR", "Euro"],
+  ["GBP", "British Pound"],
+  ["INR", "Indian Rupee"],
+  ["AUD", "Australian Dollar"],
+  ["AED", "UAE Dirham"],
+  ["SGD", "Singapore Dollar"],
+  ["MYR", "Malaysian Ringgit"],
+  ["JPY", "Japanese Yen"],
+  ["CAD", "Canadian Dollar"],
+] as const;
+
+export function CurrencySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  // A currency already saved but not in our shortlist still shows correctly.
+  const known = CURRENCIES.some(([code]) => code === value);
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} className={`${inputCls} cursor-pointer`}>
+      {!known && value && <option value={value}>{value}</option>}
+      {CURRENCIES.map(([code, label]) => (
+        <option key={code} value={code}>
+          {code} — {label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function ErrorNote({ message }: { message: string }) {
   if (!message) return null;
   return (
@@ -166,9 +207,9 @@ export function PortalHeader({ active }: { active?: "dashboard" | "account" }) {
     <header className="sticky top-0 z-40 border-b border-navy-800 bg-[color-mix(in_srgb,var(--navy-950,#0a0e1a)_88%,transparent)] backdrop-blur">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-6 py-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Plate3D" width={34} height={34} className="rounded-lg" />
+          <Image src="/logo.png" alt="GoPlate" width={34} height={34} className="rounded-lg" />
           <span className="text-lg font-extrabold tracking-wide text-ink">
-            PLATE<span className="text-accent">3D</span>
+            <span className="text-accent">Go</span>Plate
           </span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">

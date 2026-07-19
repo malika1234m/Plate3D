@@ -17,7 +17,7 @@ import * as SecureStore from "expo-secure-store";
 import { Button, Icon } from "@/components/ui";
 import { colors, font, radius } from "@/lib/theme";
 
-export const ONBOARDED_KEY = "plate3d_onboarded";
+export const ONBOARDED_KEY = "goplate_onboarded";
 
 const { width } = Dimensions.get("window");
 
@@ -89,7 +89,7 @@ export default function Welcome() {
             style={{ width: 34, height: 34 }}
           />
           <Text style={styles.brandText} allowFontScaling={false}>
-            Plate<Text style={{ color: colors.accent }}>3D</Text>
+            <Text style={{ color: colors.accent }}>Go</Text>Plate
           </Text>
         </View>
         <Pressable onPress={() => finish("/login")} hitSlop={10}>

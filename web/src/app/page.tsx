@@ -180,25 +180,25 @@ const comparison: [string, string][] = [
   ["Platforms like this cost €79–797/mo", "From $2/month — and your first month is free"],
 ];
 
-/* Looping product clips in phone frames ("see it, don't read it") */
+/* Looping food clips in phone frames ("see it, don't read it") */
 const showcaseClips = [
   {
-    src: "/showcase/film.mp4",
-    poster: "/showcase/film-poster.jpg",
-    title: "Film it once",
-    body: "Walk your phone around the plate. GoPlate trims and polishes the clip into a loop like this — automatically.",
+    src: "/showcase/cook.mp4",
+    poster: "/showcase/cook-poster.jpg",
+    title: "Watch it cook",
+    body: "The flame, the sear, the steam — your kitchen's energy lands right on the menu. Guests crave it before they read a word.",
   },
   {
-    src: "/showcase/explore.mp4",
-    poster: "/showcase/explore-poster.jpg",
-    title: "Customers crave it",
-    body: "On the menu, every dish moves. Guests spin plates in 3D, watch the kitchen work, and stop ordering blind.",
+    src: "/showcase/dish.mp4",
+    poster: "/showcase/dish-poster.jpg",
+    title: "See every detail",
+    body: "Fresh, flaky, real. Diners see exactly what's coming — and order the dish they can already taste.",
   },
   {
-    src: "/showcase/orders.mp4",
-    poster: "/showcase/orders-poster.jpg",
-    title: "Orders roll in",
-    body: "On Pro, guests order right from the menu — and it lands on your kitchen's Orders screen in seconds.",
+    src: "/showcase/dessert.mp4",
+    poster: "/showcase/dessert-poster.jpg",
+    title: "Tempt the last course",
+    body: "Even dessert sells itself when it looks like this. Nobody skips what they can see.",
   },
 ];
 

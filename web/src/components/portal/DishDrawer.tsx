@@ -204,66 +204,6 @@ export function DishDrawer({
     }
   };
 
-  /* ---------- media tile ---------- */
-
-  const MediaTile = ({
-    kind,
-    url,
-    onPick,
-    onRemove,
-    hint,
-  }: {
-    kind: "photo" | "video" | "story";
-    url: string;
-    onPick: () => void;
-    onRemove: () => void;
-    hint: string;
-  }) => (
-    <div>
-      <div className="relative aspect-video overflow-hidden rounded-xl border border-navy-700 bg-navy-800">
-        {url ? (
-          <>
-            {kind === "photo" ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <video src={url} muted playsInline controls className="h-full w-full object-cover" preload="metadata" />
-            )}
-            <button
-              type="button"
-              onClick={onRemove}
-              aria-label="Remove"
-              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-white"
-              style={{ background: "rgba(10,10,12,0.72)" }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={onPick}
-            disabled={uploading !== ""}
-            className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-ink-faint hover:text-ink-dim disabled:opacity-60"
-          >
-            {uploading === kind ? (
-              <span className="h-6 w-6 animate-spin rounded-full border-2 border-navy-700 border-t-accent" />
-            ) : (
-              <>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                <span className="text-xs font-semibold">{hint}</span>
-              </>
-            )}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <Modal title={isEdit ? "Edit dish" : "New dish"} onClose={onClose} wide>
       <form onSubmit={save} className="space-y-5">
@@ -328,17 +268,17 @@ export function DishDrawer({
           <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Media</p>
           <div className="mt-2 grid gap-3 sm:grid-cols-3">
             <div>
-              <MediaTile kind="photo" url={imageUrl} hint="Add photo" onPick={() => photoInput.current?.click()} onRemove={() => removeMedia("photo")} />
+              <MediaTile kind="photo" url={imageUrl} hint="Add photo" uploading={uploading} onPick={() => photoInput.current?.click()} onRemove={() => removeMedia("photo")} />
               <p className="mt-1.5 text-[11px] text-ink-faint">Photo — shows on every plan</p>
             </div>
             <div>
-              <MediaTile kind="video" url={videoUrl} hint="Add 360° video" onPick={() => videoInput.current?.click()} onRemove={() => removeMedia("video")} />
+              <MediaTile kind="video" url={videoUrl} hint="Add 360° video" uploading={uploading} onPick={() => videoInput.current?.click()} onRemove={() => removeMedia("video")} />
               <p className="mt-1.5 text-[11px] text-ink-faint">360° video — film a slow circle around the plate</p>
             </div>
             <div>
               {current ? (
                 <>
-                  <MediaTile kind="story" url={current.storyVideoUrl} hint="Add video" onPick={() => storyInput.current?.click()} onRemove={() => removeMedia("story")} />
+                  <MediaTile kind="story" url={current.storyVideoUrl} hint="Add video" uploading={uploading} onPick={() => storyInput.current?.click()} onRemove={() => removeMedia("story")} />
                   <p className="mt-1.5 text-[11px] text-ink-faint">“How it&apos;s made” — we auto-edit it into a short clip</p>
                 </>
               ) : (
@@ -473,6 +413,68 @@ export function DishDrawer({
         />
       )}
     </Modal>
+  );
+}
+
+/* ---------- Media tile (module scope so React never remounts it mid-upload) ---------- */
+
+function MediaTile({
+  kind,
+  url,
+  hint,
+  uploading,
+  onPick,
+  onRemove,
+}: {
+  kind: "photo" | "video" | "story";
+  url: string;
+  hint: string;
+  uploading: "" | "photo" | "video" | "story";
+  onPick: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="relative aspect-video overflow-hidden rounded-xl border border-navy-700 bg-navy-800">
+      {url ? (
+        <>
+          {kind === "photo" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={url} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <video src={url} muted playsInline controls className="h-full w-full object-cover" preload="metadata" />
+          )}
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Remove"
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-white"
+            style={{ background: "rgba(10,10,12,0.72)" }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={onPick}
+          disabled={uploading !== ""}
+          className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-ink-faint hover:text-ink-dim disabled:opacity-60"
+        >
+          {uploading === kind ? (
+            <span className="h-6 w-6 animate-spin rounded-full border-2 border-navy-700 border-t-accent" />
+          ) : (
+            <>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span className="text-xs font-semibold">{hint}</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
   );
 }
 

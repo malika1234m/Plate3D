@@ -11,7 +11,7 @@ export const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   (Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000");
 
-const TOKEN_KEY = "plate3d_token";
+const TOKEN_KEY = "goplate_token";
 
 export async function getToken(): Promise<string | null> {
   return SecureStore.getItemAsync(TOKEN_KEY);

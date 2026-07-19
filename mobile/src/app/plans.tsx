@@ -94,7 +94,7 @@ export default function Plans() {
       await WebBrowser.openBrowserAsync(ACCOUNT_URL);
       loadBilling();
     } catch {
-      Alert.alert("Couldn't open the browser", "Visit plate3d on the web to manage your plan.");
+      Alert.alert("Couldn't open the browser", "Visit GoPlate on the web to manage your plan.");
     } finally {
       setOpening(false);
     }
@@ -138,7 +138,7 @@ export default function Plans() {
           {billing?.subscribed ? "Manage your subscription" : "Upgrade on our website"}
         </Text>
         <Text style={styles.webBody}>
-          Plans and secure payment are handled on the Plate3D website. Sign in with this same account
+          Plans and secure payment are handled on the GoPlate website. Sign in with this same account
           to choose or change your plan.
         </Text>
         <Button

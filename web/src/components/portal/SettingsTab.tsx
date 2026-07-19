@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, Restaurant } from "@/lib/portal";
-import { Btn, Confirm, ErrorNote, Field, inputCls } from "@/components/portal/ui";
+import { Btn, Confirm, CurrencySelect, ErrorNote, Field, inputCls } from "@/components/portal/ui";
 
 const THEMES = [
   { id: "midnight", label: "Midnight", swatch: "#070708" },
@@ -125,7 +125,7 @@ export function SettingsTab({
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} />
           </Field>
           <Field label="Currency">
-            <input value={currency} onChange={(e) => setCurrency(e.target.value)} maxLength={8} className={inputCls} />
+            <CurrencySelect value={currency} onChange={setCurrency} />
           </Field>
         </div>
 

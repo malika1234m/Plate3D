@@ -51,6 +51,7 @@ export default async function MenuPage({ params }: Props) {
   const restaurant = await getMenu(slug);
   if (!restaurant || !restaurant.isPublished) notFound();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- destructured to omit from the public payload
   const { ownerId: _ownerId, owner, ...pub } = restaurant;
   const orderingEnabled = planOf(owner) === "pro";
   return <MenuClient restaurant={pub} orderingEnabled={orderingEnabled} />;

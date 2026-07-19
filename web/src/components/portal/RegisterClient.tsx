@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, getToken, setToken } from "@/lib/portal";
-import { Btn, ErrorNote, Field, inputCls } from "@/components/portal/ui";
+import { Btn, CurrencySelect, ErrorNote, Field, FieldError, inputCls } from "@/components/portal/ui";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /**
  * Two-step sign-up, matching the mobile app: 1) the account,
@@ -16,6 +18,7 @@ export function RegisterClient() {
   const [step, setStep] = useState<1 | 2>(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErr, setFieldErr] = useState<Record<string, string>>({});
 
   // Step 1 — account
   const [name, setName] = useState("");
@@ -28,23 +31,27 @@ export function RegisterClient() {
   const [rDescription, setRDescription] = useState("");
   const [rAddress, setRAddress] = useState("");
   const [rPhone, setRPhone] = useState("");
-  const [rCurrency, setRCurrency] = useState("USD");
+  const [rCurrency, setRCurrency] = useState("LKR");
 
   useEffect(() => {
     if (getToken()) router.replace("/dashboard");
   }, [router]);
 
+  const validateAccount = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (name.trim().length < 2) errs.name = "Enter your name.";
+    if (!EMAIL_RE.test(email.trim())) errs.email = "Enter a valid email address, like you@restaurant.com.";
+    if (password.trim().length < 8) errs.password = "Use at least 8 characters.";
+    else if (confirm && password.trim() !== confirm.trim()) errs.confirm = "Passwords do not match.";
+    if (!confirm.trim()) errs.confirm = errs.confirm ?? "Re-enter your password to confirm.";
+    setFieldErr(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const submitAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (password.trim() !== confirm.trim()) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (password.trim().length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
+    if (!validateAccount()) return;
     setBusy(true);
     try {
       const { token } = await api.register(name.trim(), email.trim(), password.trim());
@@ -60,6 +67,11 @@ export function RegisterClient() {
   const submitRestaurant = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (rName.trim().length < 2) {
+      setFieldErr({ rName: "Enter your restaurant's name." });
+      return;
+    }
+    setFieldErr({});
     setBusy(true);
     try {
       const { restaurant } = await api.createRestaurant({
@@ -85,9 +97,9 @@ export function RegisterClient() {
       <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-2.5">
-            <Image src="/logo.png" alt="Plate3D" width={44} height={44} priority className="rounded-xl" />
+            <Image src="/logo.png" alt="GoPlate" width={44} height={44} priority className="rounded-xl" />
             <span className="text-2xl font-extrabold tracking-wide text-ink">
-              PLATE<span className="text-accent">3D</span>
+              <span className="text-accent">Go</span>Plate
             </span>
           </Link>
 
@@ -104,16 +116,20 @@ export function RegisterClient() {
               <p className="mt-2 text-center text-sm text-ink-dim">Full access for 30 days. No card needed.</p>
               <form onSubmit={submitAccount} className="mt-8 space-y-4 rounded-[24px] border border-navy-700 bg-navy-900 p-7 sm:p-8">
                 <Field label="Your name">
-                  <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Alex Chef" className={inputCls} autoComplete="name" />
+                  <input required value={name} onChange={(e) => { setName(e.target.value); setFieldErr((f) => ({ ...f, name: "" })); }} placeholder="Alex Chef" className={inputCls} autoComplete="name" aria-invalid={!!fieldErr.name} />
+                  <FieldError message={fieldErr.name} />
                 </Field>
                 <Field label="Email">
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@restaurant.com" className={inputCls} autoComplete="email" />
+                  <input type="email" required value={email} onChange={(e) => { setEmail(e.target.value); setFieldErr((f) => ({ ...f, email: "" })); }} placeholder="you@restaurant.com" className={inputCls} autoComplete="email" aria-invalid={!!fieldErr.email} />
+                  <FieldError message={fieldErr.email} />
                 </Field>
-                <Field label="Password" hint="At least 8 characters.">
-                  <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputCls} autoComplete="new-password" />
+                <Field label="Password" hint={fieldErr.password ? undefined : "At least 8 characters."}>
+                  <input type="password" required value={password} onChange={(e) => { setPassword(e.target.value); setFieldErr((f) => ({ ...f, password: "" })); }} placeholder="••••••••" className={inputCls} autoComplete="new-password" aria-invalid={!!fieldErr.password} />
+                  <FieldError message={fieldErr.password} />
                 </Field>
                 <Field label="Confirm password">
-                  <input type="password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter your password" className={inputCls} autoComplete="new-password" />
+                  <input type="password" required value={confirm} onChange={(e) => { setConfirm(e.target.value); setFieldErr((f) => ({ ...f, confirm: "" })); }} placeholder="Re-enter your password" className={inputCls} autoComplete="new-password" aria-invalid={!!fieldErr.confirm} />
+                  <FieldError message={fieldErr.confirm} />
                 </Field>
                 <ErrorNote message={error} />
                 <Btn type="submit" loading={busy} className="w-full">Continue</Btn>
@@ -129,7 +145,8 @@ export function RegisterClient() {
               <p className="mt-2 text-center text-sm text-ink-dim">This becomes your public menu page — you can change everything later.</p>
               <form onSubmit={submitRestaurant} className="mt-8 space-y-4 rounded-[24px] border border-navy-700 bg-navy-900 p-7 sm:p-8">
                 <Field label="Restaurant name">
-                  <input required value={rName} onChange={(e) => setRName(e.target.value)} placeholder="The Copper Kettle" className={inputCls} />
+                  <input required value={rName} onChange={(e) => { setRName(e.target.value); setFieldErr((f) => ({ ...f, rName: "" })); }} placeholder="The Copper Kettle" className={inputCls} aria-invalid={!!fieldErr.rName} />
+                  <FieldError message={fieldErr.rName} />
                 </Field>
                 <Field label="Short description (optional)">
                   <input value={rDescription} onChange={(e) => setRDescription(e.target.value)} placeholder="Slow food, open fire." className={inputCls} />
@@ -138,8 +155,8 @@ export function RegisterClient() {
                   <Field label="Phone (optional)">
                     <input value={rPhone} onChange={(e) => setRPhone(e.target.value)} placeholder="+94 77 123 4567" className={inputCls} />
                   </Field>
-                  <Field label="Currency">
-                    <input value={rCurrency} onChange={(e) => setRCurrency(e.target.value)} placeholder="USD" maxLength={8} className={inputCls} />
+                  <Field label="Currency" hint="Shown next to every price on your menu.">
+                    <CurrencySelect value={rCurrency} onChange={setRCurrency} />
                   </Field>
                 </div>
                 <Field label="Address (optional)">

@@ -42,9 +42,9 @@ export function LoginClient() {
       <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-2.5">
-            <Image src="/logo.png" alt="Plate3D" width={44} height={44} priority className="rounded-xl" />
+            <Image src="/logo.png" alt="GoPlate" width={44} height={44} priority className="rounded-xl" />
             <span className="text-2xl font-extrabold tracking-wide text-ink">
-              PLATE<span className="text-accent">3D</span>
+              <span className="text-accent">Go</span>Plate
             </span>
           </Link>
           <h1 className="mt-8 text-center text-3xl font-extrabold text-ink">Welcome back</h1>
@@ -60,7 +60,7 @@ export function LoginClient() {
             <ErrorNote message={error} />
             <Btn type="submit" loading={busy} className="w-full">Sign in</Btn>
             <p className="text-center text-xs text-ink-faint">
-              New to Plate3D?{" "}
+              New to GoPlate?{" "}
               <Link href="/register" className="font-semibold text-accent">Create your account</Link>{" "}
               — first month free.
             </p>

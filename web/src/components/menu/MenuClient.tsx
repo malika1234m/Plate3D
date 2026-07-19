@@ -1216,7 +1216,7 @@ export function MenuClient({
               </p>
             </div>
             <span className="text-xs" style={{ color: "var(--m-faint)" }}>
-              Powered by <span style={{ color: "var(--accent)" }}>Plate3D</span>
+              Powered by <span style={{ color: "var(--accent)" }}>GoPlate</span>
             </span>
           </div>
         </main>

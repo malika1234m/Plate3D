@@ -78,7 +78,7 @@ const faqs = [
   },
   {
     q: "How do I subscribe?",
-    a: "From the Plate3D app for restaurant owners. Payment is handled securely by Stripe, and you can cancel anytime — no contracts.",
+    a: "From the GoPlate app for restaurant owners. Payment is handled securely by Stripe, and you can cancel anytime — no contracts.",
   },
   {
     q: "Do my customers need to install anything?",
@@ -86,11 +86,11 @@ const faqs = [
   },
   {
     q: "What is live table ordering?",
-    a: "On Pro menus, customers don't just browse — they build an order right from the 3D menu, add their table number and any notes, and send it. It appears instantly on the Orders screen in your Plate3D app, where the kitchen moves it from New to Preparing to Done. Payment stays at the venue, exactly as you run it today.",
+    a: "On Pro menus, customers don't just browse — they build an order right from the 3D menu, add their table number and any notes, and send it. It appears instantly on the Orders screen in your GoPlate app, where the kitchen moves it from New to Preparing to Done. Payment stays at the venue, exactly as you run it today.",
   },
   {
     q: "How do the 3D models get made?",
-    a: "You film a slow circle around the plate with your phone in the Plate3D app. We turn that capture into a photoreal 3D model your customers can spin, tilt, and place on their own table in AR.",
+    a: "You film a slow circle around the plate with your phone in the GoPlate app. We turn that capture into a photoreal 3D model your customers can spin, tilt, and place on their own table in AR.",
   },
 ];
 
@@ -268,9 +268,9 @@ export function PlansClient() {
       {/* Slim header */}
       <header className="relative z-10 max-w-[1200px] mx-auto w-full px-6 sm:px-10 pt-7 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Plate3D logo" width={40} height={40} priority className="rounded-xl" />
+          <Image src="/logo.png" alt="GoPlate logo" width={40} height={40} priority className="rounded-xl" />
           <span className="text-xl font-extrabold tracking-wide text-ink">
-            PLATE<span className="text-accent">3D</span>
+            <span className="text-accent">Go</span>Plate
           </span>
         </Link>
         <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ export function PlansClient() {
                   </Link>
                   {plan.highlight && (
                     <p className="mt-4 text-center text-xs text-ink-faint">
-                      Billed via Stripe in the Plate3D app · cancel anytime
+                      Billed via Stripe in the GoPlate app · cancel anytime
                     </p>
                   )}
                 </SpotlightCard>

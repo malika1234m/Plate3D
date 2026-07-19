@@ -1,8 +1,8 @@
-# Plate3D — 3D Restaurant Menus
+# GoPlate — 3D Restaurant Menus
 
 A restaurant menu turned into an interactive 3D experience.
 
-**How it works:** a restaurant owner installs the **Plate3D mobile app**, builds their menu, films each dish, and prints one **QR code**. Customers scan it with their phone camera — no app install — and the restaurant's menu opens in the browser with **interactive 3D models / 360° videos** of every dish.
+**How it works:** a restaurant owner installs the **GoPlate mobile app**, builds their menu, films each dish, and prints one **QR code**. Customers scan it with their phone camera — no app install — and the restaurant's menu opens in the browser with **interactive 3D models / 360° videos** of every dish.
 
 ```
 food menu/
@@ -26,7 +26,7 @@ Open:
 - `http://localhost:3000` — landing page
 - `http://localhost:3000/r/demo-bistro` — the seeded demo menu (tap a dish → 3D / 360° stage)
 
-Demo owner login: `demo@plate3d.app` / `demo1234`
+Demo owner login: `demo@goplate.app` / `demo1234`
 
 ### Environment (`web/.env`)
 
@@ -104,7 +104,7 @@ QR codes automatically point at `NEXT_PUBLIC_APP_URL`, so existing printed codes
 
 ## 9. Publish the mobile app to Google Play
 
-The app is pre-configured (`com.plate3d.app`, dark adaptive icon, camera permissions, EAS profiles).
+The app is pre-configured (`com.goplate.app`, dark adaptive icon, camera permissions, EAS profiles).
 
 ```bash
 npm install -g eas-cli

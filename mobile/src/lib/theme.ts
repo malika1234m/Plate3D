@@ -1,5 +1,5 @@
 /**
- * Plate3D design system — matches the web brand: true-black stage,
+ * GoPlate design system — matches the web brand: true-black stage,
  * orange + sky accents, Poppins typography.
  */
 export const colors = {

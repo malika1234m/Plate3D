@@ -24,7 +24,7 @@ type Billing = {
   billingConfigured: boolean;
 };
 
-const TOKEN_KEY = "plate3d_token";
+const TOKEN_KEY = "goplate_token";
 
 const PLAN_CARDS: {
   id: Plan;
@@ -98,6 +98,7 @@ export function AccountClient() {
   useEffect(() => {
     const t = localStorage.getItem(TOKEN_KEY);
     if (t) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- restore the saved session on mount, then fetch
       setToken(t);
       loadBilling(t);
     } else {
@@ -146,7 +147,7 @@ export function AccountClient() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not start checkout.");
-      if (data.url) window.location.href = data.url;
+      if (data.url) window.location.assign(data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start checkout.");
       setWorking(null);
@@ -164,7 +165,7 @@ export function AccountClient() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not open the billing portal.");
-      if (data.url) window.location.href = data.url;
+      if (data.url) window.location.assign(data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not open the billing portal.");
       setWorking(null);
@@ -182,9 +183,9 @@ export function AccountClient() {
       {/* Header */}
       <header className="relative z-10 max-w-[1100px] mx-auto w-full px-6 sm:px-10 pt-7 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Plate3D logo" width={38} height={38} priority className="rounded-xl" />
+          <Image src="/logo.png" alt="GoPlate logo" width={38} height={38} priority className="rounded-xl" />
           <span className="text-xl font-extrabold tracking-wide text-ink">
-            PLATE<span className="text-accent">3D</span>
+            <span className="text-accent">Go</span>Plate
           </span>
         </Link>
         {token && (
@@ -213,7 +214,7 @@ export function AccountClient() {
           <section className="pt-16 sm:pt-24 max-w-md mx-auto">
             <div className="text-center">
               <h1 className="text-3xl sm:text-4xl font-extrabold text-ink">Manage your plan</h1>
-              <p className="mt-3 text-ink-dim">Sign in with your Plate3D owner account to view or change your subscription.</p>
+              <p className="mt-3 text-ink-dim">Sign in with your GoPlate owner account to view or change your subscription.</p>
             </div>
             <form onSubmit={signIn} className="mt-10 rounded-[24px] border border-navy-700 bg-navy-900 p-7 sm:p-8 space-y-4">
               <div>
@@ -249,7 +250,7 @@ export function AccountClient() {
                 {signingIn ? "Signing in…" : "Sign in"}
               </button>
               <p className="text-center text-xs text-ink-faint">
-                Use the same email and password as the Plate3D app. New here?{" "}
+                Use the same email and password as the GoPlate app. New here?{" "}
                 <Link href="/register" className="text-accent">Create your account</Link> — first month free.
               </p>
             </form>
@@ -326,7 +327,7 @@ export function AccountClient() {
                   hours. Tell us which plan you want and we&apos;ll activate it on your account.
                 </p>
                 <a
-                  href="mailto:malikanishnatha4@gmail.com?subject=Activate my Plate3D plan&body=Hi! Please activate a plan on my Plate3D account. The email I signed up with is: ______ and I'd like the ______ plan (Basic / Starter / Pro)."
+                  href="mailto:malikanishnatha4@gmail.com?subject=Activate my GoPlate plan&body=Hi! Please activate a plan on my GoPlate account. The email I signed up with is: ______ and I'd like the ______ plan (Basic / Starter / Pro)."
                   className="mt-4 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white"
                   style={{ background: "linear-gradient(100deg, var(--accent), #f5934f)" }}
                 >
@@ -374,7 +375,7 @@ export function AccountClient() {
                       </div>
                     ) : !billing.billingConfigured ? (
                       <a
-                        href={`mailto:malikanishnatha4@gmail.com?subject=Activate the ${p.name} plan&body=Hi! Please activate the ${p.name} plan on my Plate3D account. The email I signed up with is: ______`}
+                        href={`mailto:malikanishnatha4@gmail.com?subject=Activate the ${p.name} plan&body=Hi! Please activate the ${p.name} plan on my GoPlate account. The email I signed up with is: ______`}
                         className="mt-6 flex w-full items-center justify-center rounded-full py-3.5 text-sm font-bold transition-colors"
                         style={
                           p.highlight

@@ -23,14 +23,22 @@ function mediaBadge(i: MenuItem): { label: string; cls: string } {
 export function RestaurantClient({ id }: { id: string }) {
   const router = useRouter();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [tab, setTab] = useState<Tab>("menu");
+  // Deep links from the dashboard (?tab=orders / ?tab=qr). Read once on mount;
+  // safe from hydration mismatch because tabs render only after the client fetch.
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window === "undefined") return "menu";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return t === "orders" || t === "qr" || t === "settings" ? t : "menu";
+  });
   const [error, setError] = useState("");
 
   // Menu-tab state
   const [catModal, setCatModal] = useState<null | { cat?: Category }>(null);
   const [catName, setCatName] = useState("");
+  const [catAllDay, setCatAllDay] = useState(true);
   const [catFrom, setCatFrom] = useState("");
   const [catTo, setCatTo] = useState("");
+  const [catErr, setCatErr] = useState("");
   const [catBusy, setCatBusy] = useState(false);
   const [deleteCat, setDeleteCat] = useState<Category | null>(null);
   const [drawer, setDrawer] = useState<null | { categoryId: string; item?: MenuItem }>(null);
@@ -49,22 +57,35 @@ export function RestaurantClient({ id }: { id: string }) {
       router.replace("/login");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount; setState happens after await
     load();
   }, [router, load]);
 
   const openCatModal = (cat?: Category) => {
     setCatName(cat?.name ?? "");
+    const limited = !!(cat?.availableFrom && cat?.availableTo);
+    setCatAllDay(!limited);
     setCatFrom(cat?.availableFrom ?? "");
     setCatTo(cat?.availableTo ?? "");
+    setCatErr("");
     setCatModal({ cat });
   };
 
   const saveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCatErr("");
+    if (!catAllDay && (!catFrom || !catTo)) {
+      setCatErr("Pick both a start and an end time — or switch back to All day.");
+      return;
+    }
     setCatBusy(true);
     setError("");
     try {
-      const body = { name: catName.trim(), availableFrom: catFrom, availableTo: catTo };
+      const body = {
+        name: catName.trim(),
+        availableFrom: catAllDay ? "" : catFrom,
+        availableTo: catAllDay ? "" : catTo,
+      };
       if (catModal?.cat) await api.updateCategory(catModal.cat.id, body);
       else await api.createCategory(id, body);
       setCatModal(null);
@@ -266,14 +287,68 @@ export function RestaurantClient({ id }: { id: string }) {
             <Field label="Name">
               <input autoFocus required value={catName} onChange={(e) => setCatName(e.target.value)} placeholder="e.g. Starters" className={inputCls} />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Served from (optional)" hint="24h time, e.g. 11:00">
-                <input value={catFrom} onChange={(e) => setCatFrom(e.target.value)} placeholder="11:00" className={inputCls} />
-              </Field>
-              <Field label="Until">
-                <input value={catTo} onChange={(e) => setCatTo(e.target.value)} placeholder="23:00" className={inputCls} />
-              </Field>
+
+            {/* Serving hours: All day by default, native time pickers when limited */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">When is this served?</p>
+              <div className="mt-2 flex gap-2">
+                {(
+                  [
+                    [true, "All day"],
+                    [false, "Limited hours"],
+                  ] as const
+                ).map(([allDay, label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setCatAllDay(allDay);
+                      setCatErr("");
+                      if (!allDay && !catFrom && !catTo) {
+                        setCatFrom("11:00");
+                        setCatTo("22:00");
+                      }
+                    }}
+                    aria-pressed={catAllDay === allDay}
+                    className="rounded-full border px-4 py-2 text-xs font-bold transition-colors"
+                    style={
+                      catAllDay === allDay
+                        ? { borderColor: "var(--accent)", color: "var(--accent)", background: "rgba(240,118,46,0.08)" }
+                        : { borderColor: "var(--navy-700)", color: "var(--ink-dim)" }
+                    }
+                  >
+                    {catAllDay === allDay ? "✓ " : ""}{label}
+                  </button>
+                ))}
+              </div>
+              {!catAllDay && (
+                <div className="mt-3 flex items-center gap-3">
+                  <input
+                    type="time"
+                    value={catFrom}
+                    onChange={(e) => { setCatFrom(e.target.value); setCatErr(""); }}
+                    className={`${inputCls} w-36 [color-scheme:dark]`}
+                    aria-label="Served from"
+                  />
+                  <span className="text-sm text-ink-faint">to</span>
+                  <input
+                    type="time"
+                    value={catTo}
+                    onChange={(e) => { setCatTo(e.target.value); setCatErr(""); }}
+                    className={`${inputCls} w-36 [color-scheme:dark]`}
+                    aria-label="Served until"
+                  />
+                </div>
+              )}
+              {!catAllDay && (
+                <p className="mt-2 text-xs text-ink-faint">
+                  Outside these hours the section stays visible but is marked “Served {catFrom || "…"}–{catTo || "…"}”.
+                  Overnight windows like 22:00 to 02:00 work too.
+                </p>
+              )}
+              {catErr && <p className="mt-2 text-xs font-semibold" style={{ color: "#ef6a58" }}>{catErr}</p>}
             </div>
+
             <div className="flex justify-end gap-3">
               <Btn variant="secondary" onClick={() => setCatModal(null)}>Cancel</Btn>
               <Btn type="submit" loading={catBusy}>{catModal.cat ? "Save" : "Create"}</Btn>

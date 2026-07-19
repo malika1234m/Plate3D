@@ -48,7 +48,7 @@ export default function Login() {
         <View style={styles.hero}>
           <Image source={require("../../assets/images/plate-logo.png")} style={styles.logoImg} />
           <Text style={styles.logo} allowFontScaling={false}>
-            Plate<Text style={{ color: colors.accent }}>3D</Text>
+            <Text style={{ color: colors.accent }}>Go</Text>Plate
           </Text>
           <Text style={styles.tagline}>Your menu, in three dimensions.</Text>
         </View>
@@ -87,7 +87,7 @@ export default function Login() {
 
         <Pressable onPress={() => router.push("/register")} style={{ marginTop: 26 }}>
           <Text style={styles.switch}>
-            New to Plate3D? <Text style={styles.switchAccent}>Create an account</Text>
+            New to GoPlate? <Text style={styles.switchAccent}>Create an account</Text>
           </Text>
         </Pressable>
       </ScrollView>

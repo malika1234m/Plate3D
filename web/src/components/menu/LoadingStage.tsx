@@ -36,7 +36,7 @@ export function LoadingStage({ progress }: { progress: number }) {
         />
         <Image
           src="/logo.png"
-          alt="Plate3D"
+          alt="GoPlate"
           width={132}
           height={132}
           priority

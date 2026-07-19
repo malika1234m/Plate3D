@@ -7,3 +7,4 @@
 
 # Dependencies (belt-and-braces; each app also ignores its own)
 node_modules/
+/brand-assets/

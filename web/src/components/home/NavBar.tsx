@@ -6,11 +6,9 @@ import Link from "next/link";
 
 const NAV = [
   ["Home", "/"],
-  ["Demo Menu", "/r/demo-bistro"],
   ["Features", "#features"],
   ["For Restaurants", "#for-restaurants"],
   ["Plans & Pricing", "/plans"],
-  ["Sign in", "/login"],
   ["Contact", "#contact"],
 ] as const;
 
@@ -18,7 +16,7 @@ function BrandLogo() {
   return (
     <Image
       src="/logo.png"
-      alt="Plate3D logo"
+      alt="GoPlate logo"
       width={42}
       height={42}
       priority
@@ -56,7 +54,7 @@ export function NavBar() {
         <span className="flex items-center gap-2.5 shrink-0">
           <BrandLogo />
           <span className="text-[22px] font-extrabold tracking-wide text-ink">
-            PLATE<span className="text-accent">3D</span>
+            <span className="text-accent">Go</span>Plate
           </span>
         </span>
 

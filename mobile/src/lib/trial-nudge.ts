@@ -2,7 +2,7 @@ import { Alert } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { startUpgrade } from "./upgrade";
 
-const PROMPT_DATE_KEY = "plate3d_trial_prompt_date";
+const PROMPT_DATE_KEY = "goplate_trial_prompt_date";
 
 /** Days-left threshold at which we start warning ahead of expiry. */
 const WARN_FROM_DAYS = 5;

@@ -1,24 +1,24 @@
 {
   "expo": {
-    "name": "Plate3D",
-    "slug": "plate3d",
+    "name": "GoPlate",
+    "slug": "goplate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "plate3d",
+    "scheme": "goplate",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#070708",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.plate3d.app",
+      "bundleIdentifier": "com.goplate.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Plate3D uses the camera to film your dishes for 3D menu models.",
-        "NSMicrophoneUsageDescription": "Plate3D records audio as part of dish videos.",
-        "NSPhotoLibraryUsageDescription": "Plate3D lets you pick dish photos and videos from your library."
+        "NSCameraUsageDescription": "GoPlate uses the camera to film your dishes for 3D menu models.",
+        "NSMicrophoneUsageDescription": "GoPlate records audio as part of dish videos.",
+        "NSPhotoLibraryUsageDescription": "GoPlate lets you pick dish photos and videos from your library."
       }
     },
     "android": {
-      "package": "com.plate3d.app",
+      "package": "com.goplate.app",
       "adaptiveIcon": {
         "backgroundColor": "#070708",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -41,8 +41,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Plate3D uses the camera to film your dishes for 3D menu models.",
-          "microphonePermission": "Plate3D records audio as part of dish videos."
+          "cameraPermission": "GoPlate uses the camera to film your dishes for 3D menu models.",
+          "microphonePermission": "GoPlate records audio as part of dish videos."
         }
       ],
       [
@@ -63,16 +63,11 @@
     },
     "extra": {
       "router": {},
-      "eas": {
-        "projectId": "2478ee53-8791-4910-be4c-4520a5eafa75"
-      }
+      "eas": {}
     },
     "owner": "malika_nish",
     "runtimeVersion": {
       "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/2478ee53-8791-4910-be4c-4520a5eafa75"
     }
   }
 }

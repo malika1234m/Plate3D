@@ -63,11 +63,16 @@
     },
     "extra": {
       "router": {},
-      "eas": {}
+      "eas": {
+        "projectId": "68becbb8-a206-49b8-9bc2-f8571c660ec0"
+      }
     },
     "owner": "malika_nish",
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/68becbb8-a206-49b8-9bc2-f8571c660ec0"
     }
   }
 }
